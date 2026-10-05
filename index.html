@@ -337,7 +337,7 @@ function merge(d){
     const b = d.progress.best;
     if (Array.isArray(b) && b.length === 9) S.progress.best = b.map(v => clamp(parseInt(v) || 0, 0, 3));
     if (Number.isFinite(d.progress.practiced)) S.progress.practiced = Math.max(0, d.progress.practiced | 0);
-    if (Array.isArray(d.progress.lessons)) S.progress.lessons = d.progress.lessons.filter(v => Number.isInteger(v) && v >= 0 && v < 5);
+    if (Array.isArray(d.progress.lessons)) S.progress.lessons = d.progress.lessons.filter(v => Number.isInteger(v) && v >= 0 && v < 10);
     else if (S.settings.staff !== 'treble') S.settings.staff = 'treble'; /* saved before lessons existed: start on the top staff */
   }
   if (Number.isFinite(d.savedAt)) S.savedAt = d.savedAt;
@@ -535,7 +535,7 @@ function homeView(){
   <button class="menu" data-act="go" data-arg="practice"><span class="ico">${I.flower}</span><span class="txt"><span class="name">Practice Garden</span><span class="desc">No clock. Take your time.</span></span>${I.chev('#7A3E9D')}</button>
   <button class="menu rose" data-act="go" data-arg="levels"><span class="ico">${I.castle}</span><span class="txt"><span class="name">Royal Challenge</span><span class="desc">Beat the clock · Level ${nl + 1} of 9</span></span>${I.chev('#FFFFFF')}</button>
   <button class="menu pink" data-act="go" data-arg="scale"><span class="ico">${I.stairs}</span><span class="txt"><span class="name">Scale Castle</span><span class="desc">See and hear ${KEYS[s.key].label}</span></span>${I.chev('#C2306E')}</button>
-  <button class="menu" data-act="go" data-arg="lessons"><span class="ico">${I.book}</span><span class="txt"><span class="name">Bass Clef School</span><span class="desc">${lessonsDone() >= LESSONS.length ? 'She can read the bottom staff!' : 'Learn the bottom staff · ' + lessonsDone() + ' of ' + LESSONS.length + ' lessons'}</span></span>${I.chev('#7A3E9D')}</button>
+  <button class="menu" data-act="go" data-arg="lessons"><span class="ico">${I.book}</span><span class="txt"><span class="name">Note School</span><span class="desc">${schoolSummary()}</span></span>${I.chev('#7A3E9D')}</button>
   <div class="bottom">
     <div class="seg" role="group" aria-label="Note names">
       <button class="${s.names === 'letter' ? 'on' : ''}" data-act="set" data-k="names" data-v="letter">A B C</button>
@@ -724,7 +724,7 @@ function settingsView(){
   <div class="set-card">
     <h2>Staff</h2>
     ${seg('staff', [['treble','Treble'],['bass','Bass'],['grand','Both hands']])}
-    ${lessonsDone() < LESSONS.length ? `<p>Bass and Both hands work best after the Bass Clef School lessons (${lessonsDone()} of ${LESSONS.length} done).</p>` : ''}
+    ${lessonsDone() < 5 ? `<p>Bass and Both hands work best after the bass lessons in Note School (${lessonsDone()} of 5 done).</p>` : ''}
   </div>
   <div class="set-card">
     <h2>Note range</h2>
@@ -750,42 +750,74 @@ function settingsView(){
   </div>`;
 }
 
-/* ---------- bass clef lessons ---------- */
+/* ---------- note school: treble + bass lessons ---------- */
+/* Indexes 0-4 are bass, 5-9 treble (bass came first; saved progress uses these numbers). */
 const LESSONS = [
-  {title:'Meet Fa', short:'The bass clef and its Fa line', pool:[23,24,25], count:4, pages:[
+  {clef:'bass', title:'Meet Fa', short:'The bass clef and its Fa line', pool:[23,24,25], count:4, pages:[
     {notes:[24], hi:0, text:'This is the <b>bass clef</b>. It is for your left hand. Its two dots hug one line, and that line is always <b>Fa (F)</b>.'},
     {notes:[23,24,25], hi:1, text:'Notes climb like stairs: line, space, line. One step up from Fa is <b>So</b>. One step down is <b>Mi</b>. Tap them to hear.'}
   ]},
-  {title:'The lines', short:'So · Si · Re · Fa · La', pool:[18,20,22,24,26], count:5, pages:[
+  {clef:'bass', title:'The lines', short:'So · Si · Re · Fa · La', pool:[18,20,22,24,26], count:5, pages:[
     {notes:[18,20,22,24,26], text:'The five lines, from the bottom up, are <b>So, Si, Re, Fa, La</b>. Tap each one and say it out loud.'},
     {notes:[18,20,22,24,26], text:'In letters that is G B D F A: <b>Good Boys Do Fine Always</b>. In F major songs Si gets a ♭ and becomes Si♭.'}
   ]},
-  {title:'The spaces', short:'La · Do · Mi · So', pool:[19,21,23,25], count:5, pages:[
+  {clef:'bass', title:'The spaces', short:'La · Do · Mi · So', pool:[19,21,23,25], count:5, pages:[
     {notes:[19,21,23,25], text:'The four spaces, from the bottom up, are <b>La, Do, Mi, So</b>.'},
     {notes:[19,21,23,25], text:'In letters that is A C E G: <b>All Cows Eat Grass</b>. The Do in space 2 is a good landmark for your left hand.'}
   ]},
-  {title:'Up to middle C', short:'La · Si · middle Do', pool:[24,25,26,27,28], count:5, pages:[
+  {clef:'bass', title:'Up to middle C', short:'La · Si · middle Do', pool:[24,25,26,27,28], count:5, pages:[
     {notes:[26,27,28], text:'Above the top line (La) comes <b>Si</b>, then <b>Do</b> on its own little line. That Do is <b>middle C</b>.'},
     {notes:[28], grand:true, text:'Middle C is the bridge between your two hands. Just above the bass staff or just below the treble staff, it is the same Do.'}
   ]},
-  {title:'Mix it up', short:'Every note on the bottom staff', pool:[18,19,20,21,22,23,24,25,26,27,28], count:6, pages:[]}
+  {clef:'bass', title:'Mix it up', short:'Every note on the bottom staff', pool:[18,19,20,21,22,23,24,25,26,27,28], count:6, pages:[]},
+
+  {clef:'treble', title:'Meet So', short:'The treble clef and its So line', pool:[31,32,33], count:4, pages:[
+    {notes:[32], hi:0, text:'This is the <b>treble clef</b>. It is for your right hand. Its curl wraps around one line, and that line is always <b>So (G)</b>.'},
+    {notes:[31,32,33], hi:1, text:'Notes climb like stairs: space, line, space. One step up from So is <b>La</b>. One step down is <b>Fa</b>. Tap them to hear.'}
+  ]},
+  {clef:'treble', title:'The lines', short:'Mi · So · Si · Re · Fa', pool:[30,32,34,36,38], count:5, pages:[
+    {notes:[30,32,34,36,38], text:'The five lines, from the bottom up, are <b>Mi, So, Si, Re, Fa</b>. Tap each one and say it out loud.'},
+    {notes:[30,32,34,36,38], text:'In letters that is E G B D F: <b>Every Good Boy Does Fine</b>. In F major songs the middle line Si gets a ♭ and becomes Si♭.'}
+  ]},
+  {clef:'treble', title:'The spaces', short:'Fa · La · Do · Mi', pool:[31,33,35,37], count:5, pages:[
+    {notes:[31,33,35,37], text:'The four spaces, from the bottom up, are <b>Fa, La, Do, Mi</b>.'},
+    {notes:[31,33,35,37], text:'In letters the spaces spell a word: <b>F A C E</b>. Face is in the space!'}
+  ]},
+  {clef:'treble', title:'Above and below', short:'Middle Do · Re · So · La', pool:[28,29,30,38,39,40], count:5, pages:[
+    {notes:[28,29,30], text:'Below the bottom line (Mi) is <b>Re</b>, hanging under the staff. Below that is middle C, <b>Do</b>, on its own little line.'},
+    {notes:[38,39,40], text:'Above the top line (Fa) is <b>So</b>, floating on top. Above that is <b>La</b>, on its own little line.'}
+  ]},
+  {clef:'treble', title:'Mix it up', short:'Every note on the top staff', pool:[28,29,30,31,32,33,34,35,36,37,38,39,40], count:6, pages:[]}
+];
+const TRACKS = [
+  {clef:'treble', title:'Treble clef', sub:'Top staff · right hand', ids:[5,6,7,8,9]},
+  {clef:'bass', title:'Bass clef', sub:'Bottom staff · left hand', ids:[0,1,2,3,4]}
 ];
 let LS_ = null; /* current lesson state */
-function lessonsDone(){ return S.progress.lessons.length; }
+function trackOf(i){ return TRACKS.find(t => t.ids.includes(i)); }
+function trackDone(clef){ const t = TRACKS.find(x => x.clef === clef); return t.ids.filter(i => S.progress.lessons.includes(i)).length; }
+function lessonsDone(){ return trackDone('bass'); }
+function schoolSummary(){
+  const t = trackDone('treble'), b = trackDone('bass');
+  if (t === 5 && b === 5) return 'Both staves learned!';
+  return 'Treble ' + t + ' of 5 · Bass ' + b + ' of 5';
+}
 function lessonsView(){
   const done = S.progress.lessons;
-  const next = LESSONS.findIndex((_, i) => !done.includes(i));
   return `
-  ${header('Bass Clef School')}
-  <p class="note">Five short lessons for the bottom staff. Each one ends with a quick quiz.</p>
-  ${LESSONS.map((l, i) => {
-    const ok = done.includes(i), isNext = i === next;
-    return `<button class="menu ${isNext ? 'rose' : ''}" data-act="lesson" data-arg="${i}">
-      <span class="ico lesson-num ${ok ? 'done' : ''}">${ok ? I.tick : i + 1}</span>
-      <span class="txt"><span class="name">${l.title}</span><span class="desc">${l.short}</span></span>
-      ${I.chev(isNext ? '#FFFFFF' : '#7A3E9D')}</button>`;
+  ${header('Note School')}
+  <p class="note">Short lessons for each staff. Every lesson ends with a quick quiz.</p>
+  ${TRACKS.map(t => {
+    const next = t.ids.find(i => !done.includes(i));
+    return `<div class="tower">${t.title} · ${t.sub}</div>` + t.ids.map((i, n) => {
+      const l = LESSONS[i], ok = done.includes(i), isNext = i === next;
+      return `<button class="menu ${isNext ? 'rose' : ''}" data-act="lesson" data-arg="${i}">
+        <span class="ico lesson-num ${ok ? 'done' : ''}">${ok ? I.tick : n + 1}</span>
+        <span class="txt"><span class="name">${l.title}</span><span class="desc">${l.short}</span></span>
+        ${I.chev(isNext ? '#FFFFFF' : '#7A3E9D')}</button>`;
+    }).join('');
   }).join('')}
-  ${done.length >= LESSONS.length && S.settings.staff === 'treble' ? `<button class="btn rose" data-act="bothon" style="flex:none">Add the bottom staff to her games</button>` : ''}`;
+  ${trackDone('bass') >= 5 && S.settings.staff === 'treble' ? `<button class="btn rose" data-act="bothon" style="flex:none">Add the bottom staff to her games</button>` : ''}`;
 }
 function startLesson(i){
   LS_ = {i, page:0, phase: LESSONS[i].pages.length ? 'teach' : 'quiz', asked:0, right:0, q:null, answered:false, chosen:null, sel:null, last:null};
@@ -793,7 +825,7 @@ function startLesson(i){
   S.screen = 'lesson'; render(); window.scrollTo(0, 0);
 }
 function lessonQ(){
-  const pool = LESSONS[LS_.i].pool;
+  const L = LESSONS[LS_.i], pool = L.pool;
   let s, t = 0;
   do { s = pool[rint(0, pool.length - 1)]; t++; } while (s === LS_.last && t < 12);
   LS_.last = s;
@@ -801,13 +833,13 @@ function lessonQ(){
   let others = shuffle([...new Set(pool.map(liOf))].filter(x => x !== c)).slice(0, 3);
   if (others.length < 3) others = others.concat(shuffle([0,1,2,3,4,5,6].filter(x => x !== c && !others.includes(x))).slice(0, 3 - others.length));
   const opts = shuffle([[c]].concat(others.map(x => [x])));
-  return {steps:[s], staff:'bass', options:opts, answer:opts.findIndex(o => o[0] === c)};
+  return {steps:[s], staff:L.clef, options:opts, answer:opts.findIndex(o => o[0] === c)};
 }
 function lessonView(){
-  const L = LESSONS[LS_.i], total = L.pages.length + L.count;
+  const L = LESSONS[LS_.i], tr = trackOf(LS_.i), num = tr.ids.indexOf(LS_.i) + 1, total = L.pages.length + L.count;
   const at = LS_.phase === 'teach' ? LS_.page : LS_.phase === 'quiz' ? L.pages.length + LS_.asked : total;
   const dots = `<div class="dots" aria-label="Step ${Math.min(at + 1, total)} of ${total}">${[...Array(total).keys()].map(k => `<i class="${k < at ? 'on' : k === at ? 'now' : ''}"></i>`).join('')}</div>`;
-  const head = `<div class="top"><button class="icon-btn" data-act="go" data-arg="lessons" aria-label="Back to lessons">${I.back}</button><h1>Lesson ${LS_.i + 1} · ${L.title}</h1><span style="width:44px"></span></div>${dots}`;
+  const head = `<div class="top"><button class="icon-btn" data-act="go" data-arg="lessons" aria-label="Back to lessons">${I.back}</button><h1>${L.clef === 'bass' ? 'Bass' : 'Treble'} ${num} · ${L.title}</h1><span style="width:44px"></span></div>${dots}`;
   if (LS_.phase === 'teach'){
     const p = L.pages[LS_.page], last = LS_.page === L.pages.length - 1;
     return `${head}
@@ -822,23 +854,26 @@ function lessonView(){
   }
   if (LS_.phase === 'quiz'){
     const q = LS_.q, ok = LS_.answered && LS_.chosen === q.answer;
-    const fb = LS_.answered ? `<div class="feedback ${ok ? 'ok' : 'no'}">${ok ? I.star(true, 32) : ''}<div><b>${ok ? 'Yes!' : 'Nearly!'} That’s ${spoken(q.steps.map(liOf), 'C')}.</b><span>${where(q.steps[0], 'bass')}</span></div></div>` : '';
+    const fb = LS_.answered ? `<div class="feedback ${ok ? 'ok' : 'no'}">${ok ? I.star(true, 32) : ''}<div><b>${ok ? 'Yes!' : 'Nearly!'} That’s ${spoken(q.steps.map(liOf), 'C')}.</b><span>${where(q.steps[0], L.clef)}</span></div></div>` : '';
     return `${head}
     <div class="card"><div class="staff" id="staff"></div><div class="prompt">Question ${LS_.asked + 1} of ${L.count}</div></div>
     ${optButtons(q, LS_.answered, LS_.chosen, 'C')}
     ${fb}
     <div class="btn-row">${LS_.answered ? `<button class="btn violet wide" data-act="lqnext">${LS_.asked + 1 >= L.count ? 'See how I did' : 'Next question'}</button>` : ''}</div>`;
   }
-  const need = Math.ceil(L.count * 0.75), pass = LS_.right >= need, lastLesson = LS_.i === LESSONS.length - 1;
+  const need = Math.ceil(L.count * 0.75), pass = LS_.right >= need;
+  const pos = tr.ids.indexOf(LS_.i), lastLesson = pos === tr.ids.length - 1, nextId = tr.ids[pos + 1];
+  const doneTitle = L.clef === 'bass' ? 'She can read the bottom staff!' : 'She can read the top staff!';
   return `${head}
   <div class="res" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;flex:1">
     ${I.crown(pass ? '#B9831A' : '#D7A9BE', 72)}
-    <h1>${pass ? (lastLesson ? 'She can read the bottom staff!' : 'Lesson complete!') : 'Let’s try that again'}</h1>
+    <h1>${pass ? (lastLesson ? doneTitle : 'Lesson complete!') : 'Let’s try that again'}</h1>
     <div class="stats" style="grid-template-columns:minmax(0,1fr)"><div><strong>${LS_.right}/${L.count}</strong><span>${pass ? 'right answers' : 'right · ' + need + ' needed to pass'}</span></div></div>
     <div class="btn-row" style="width:100%">
       <button class="btn ghost" data-act="lesson" data-arg="${LS_.i}">${pass ? 'Do it again' : 'Try again'}</button>
-      ${pass && !lastLesson ? `<button class="btn rose wide" data-act="lesson" data-arg="${LS_.i + 1}">Next lesson</button>` : ''}
-      ${pass && lastLesson ? `<button class="btn rose wide" data-act="bothon">Play with both hands</button>` : ''}
+      ${pass && !lastLesson ? `<button class="btn rose wide" data-act="lesson" data-arg="${nextId}">Next lesson</button>` : ''}
+      ${pass && lastLesson && L.clef === 'bass' ? `<button class="btn rose wide" data-act="bothon">Play with both hands</button>` : ''}
+      ${pass && lastLesson && L.clef === 'treble' ? `<button class="btn rose wide" data-act="lesson" data-arg="${TRACKS[1].ids.find(i => !S.progress.lessons.includes(i)) ?? 0}">Start the bass clef</button>` : ''}
       ${!pass ? `<button class="btn rose wide" data-act="go" data-arg="lessons">All lessons</button>` : ''}
     </div>
   </div>`;
@@ -848,13 +883,13 @@ function lessonAfter(){
   if (LS_.phase === 'teach'){
     const p = L.pages[LS_.page], hi = LS_.sel !== null ? LS_.sel : p.hi, colors = {};
     if (hi !== undefined && hi !== null) colors[hi] = ROSE;
-    const xs = drawStaff($('staff'), {mode: p.grand ? 'grand' : 'bass', key:'C', notes:p.notes.map(s => ({step:s, staff:'bass'})), colors, dur:'w', pad: p.notes.length <= 2});
+    const xs = drawStaff($('staff'), {mode: p.grand ? 'grand' : L.clef, key:'C', notes:p.notes.map(s => ({step:s, staff:L.clef})), colors, dur:'w', pad: p.notes.length <= 2});
     scaleXs = xs;
     document.querySelectorAll('#labels button').forEach((b, i) => { b.style.left = ((xs[i] !== undefined ? xs[i] : 0.5) * 100) + '%'; });
   } else if (LS_.phase === 'quiz'){
     const q = LS_.q, colors = {};
     if (LS_.answered && LS_.chosen === q.answer) colors[0] = RIGHT;
-    drawStaff($('staff'), {mode:'bass', key:'C', notes:[{step:q.steps[0], staff:'bass'}], colors});
+    drawStaff($('staff'), {mode:L.clef, key:'C', notes:[{step:q.steps[0], staff:L.clef}], colors});
   }
 }
 function lessonTap(i){
@@ -870,11 +905,13 @@ function lessonAnswer(i){
   render();
 }
 function lessonNextQ(){
+  const L = LESSONS[LS_.i];
   LS_.asked++;
-  if (LS_.asked >= LESSONS[LS_.i].count){
+  if (LS_.asked >= L.count){
     LS_.phase = 'end';
-    if (LS_.right >= Math.ceil(LESSONS[LS_.i].count * 0.75) && !S.progress.lessons.includes(LS_.i)){ S.progress.lessons.push(LS_.i); S.progress.lessons.sort(); save(); }
-    if (LS_.right >= Math.ceil(LESSONS[LS_.i].count * 0.75) && S.settings.sound){ [21,23,25,28].forEach((s, j) => tone(freq(s, 'C'), j * 0.12, 0.9, 0.18)); }
+    const pass = LS_.right >= Math.ceil(L.count * 0.75);
+    if (pass && !S.progress.lessons.includes(LS_.i)){ S.progress.lessons.push(LS_.i); S.progress.lessons.sort((a, b) => a - b); save(); }
+    if (pass && S.settings.sound){ (L.clef === 'bass' ? [21,23,25,28] : [28,30,32,35]).forEach((s, j) => tone(freq(s, 'C'), j * 0.12, 0.9, 0.18)); }
   } else { LS_.q = lessonQ(); LS_.answered = false; LS_.chosen = null; }
   render();
 }
