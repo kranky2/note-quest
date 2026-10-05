@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Note Quest">
+<meta name="theme-color" content="#FFF4F8">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Princess Note Quest</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<style>
+/* Layout: one phone-width column; each screen is a stack of soft white cards on a blush or lavender ground. Single light "storybook" look on purpose. */
+:root{
+  color-scheme: light;
+  --blush:#FFF4F8; --lilac:#F6F0FF; --card:#FFFFFF;
+  --ink:#4A1D4F; --ink-soft:#6B4470;
+  --rose:#C2306E; --rose-deep:#8F1F50; --rose-tint:#F9D3E2; --rose-line:#F3C9DA;
+  --violet:#7A3E9D; --violet-deep:#55276F; --lav:#E9DDFB; --lav-line:#D9C6F5;
+  --gold:#F2B630; --gold-deep:#B9831A;
+  --right:#2B6CB0; --right-deep:#1D4E80; --right-tint:#DCEBFA;
+  --wrong:#B8521A; --wrong-deep:#7E3810; --wrong-tint:#FCE6D8;
+  --locked:#F1E4EB; --locked-ink:#7E6480;
+  --display:"Fredoka","Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+}
+html,body{height:100%}
+body{background:var(--blush);color:var(--ink);font-family:var(--body);font-size:16px;-webkit-tap-highlight-color:transparent}
+body.lilac{background:var(--lilac)}
+button{font:inherit;color:inherit}
+.app{max-width:440px;margin:0 auto;min-height:100%;box-sizing:border-box;padding-inline:16px;padding-block:18px 24px;display:flex;flex-direction:column;gap:16px}
+.app>*{min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top h1{font-family:var(--display);font-weight:600;font-size:22px;margin:0;text-align:center;flex:1;text-wrap:balance}
+.icon-btn{border:0;cursor:pointer;width:44px;height:44px;flex-shrink:0;border-radius:22px;background:var(--card);display:flex;align-items:center;justify-content:center}
+.pill{display:flex;align-items:center;gap:6px;background:var(--card);border-radius:20px;padding:8px 12px;font-weight:800;font-size:14px;white-space:nowrap}
+.hearts{display:flex;gap:3px}
+.card{background:var(--card);border-radius:28px;box-shadow:0 6px 0 var(--rose-line);padding:16px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.lilac .card{box-shadow:0 6px 0 var(--lav-line)}
+.staff{width:100%;max-width:360px}
+.staff svg{display:block}
+.prompt{font-family:var(--display);font-weight:600;font-size:19px;text-align:center}
+.prompt.small{font-family:var(--body);font-size:15px;font-weight:700;color:var(--ink-soft)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.chip{border:0;cursor:pointer;padding:9px 14px;border-radius:16px;background:var(--card);font-weight:800;font-size:14px;min-height:40px}
+.chip.on{background:var(--violet);color:#fff}
+.chip.tag{background:var(--lav);cursor:default;min-height:0;padding:6px 12px;font-size:13px}
+
+/* answer buttons */
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.opts.seq{grid-template-columns:minmax(0,1fr)}
+.opt{border:0;cursor:pointer;min-height:76px;border-radius:22px;background:var(--card);box-shadow:0 5px 0 var(--rose-line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:8px;transition:transform .12s}
+.lilac .opt{box-shadow:0 5px 0 var(--lav-line)}
+.opt:active{transform:translateY(3px)}
+.opt .main{font-family:var(--display);font-weight:700;font-size:32px;line-height:1.1;display:flex;align-items:center;gap:8px}
+.opts.seq .opt{min-height:62px}
+.opts.seq .opt .main{font-size:26px;letter-spacing:1px}
+.opts.seq4 .opt .main{font-size:23px}
+.opt .sub{font-size:13px;font-weight:800;color:var(--ink-soft);letter-spacing:1px}
+.opt.right{background:var(--right);box-shadow:0 5px 0 var(--right-deep);color:#fff;animation:pop .35s}
+.opt.right .sub{color:#E3EEFA}
+.opt.wrong{background:var(--wrong);box-shadow:0 5px 0 var(--wrong-deep);color:#fff}
+.opt.wrong .sub{color:#FBE4D6}
+.opt.dim{opacity:.55}
+.opt[disabled]{cursor:default}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+
+.feedback{border-radius:20px;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.feedback.ok{background:var(--right-tint);color:var(--right-deep)}
+.feedback.no{background:var(--wrong-tint);color:var(--wrong-deep)}
+.feedback.hint{background:var(--lav);color:var(--ink)}
+.feedback b{display:block;font-size:16px;font-weight:800}
+.feedback span{font-size:14px;line-height:1.4}
+
+.btn-row{display:flex;gap:12px;margin-top:auto}
+.btn{border:0;cursor:pointer;flex:1;min-height:54px;border-radius:20px;background:var(--card);font-weight:800;font-size:16px;color:var(--violet);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.wide{flex:1.4}
+.btn.violet{background:var(--violet);color:#fff;box-shadow:0 5px 0 var(--violet-deep)}
+.btn.rose{background:var(--rose);color:#fff;box-shadow:0 5px 0 var(--rose-deep)}
+.btn.ghost{color:var(--rose-deep)}
+
+/* home */
+.hello{display:flex;align-items:center;gap:10px;font-weight:800;min-width:0}
+.hello span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avatar{width:44px;height:44px;border-radius:22px;background:var(--lav);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand{text-align:center;display:flex;flex-direction:column;gap:4px}
+.brand h1{font-family:var(--display);font-weight:700;font-size:44px;color:var(--rose);line-height:1;margin:0}
+.brand p{margin:0;color:var(--ink-soft)}
+.menu{border:0;cursor:pointer;text-align:left;background:var(--card);border-radius:24px;padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 0 var(--lav-line)}
+.menu .ico{width:52px;height:52px;border-radius:16px;background:var(--lav);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.menu .txt{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.menu .name{font-family:var(--display);font-weight:600;font-size:21px}
+.menu .desc{font-size:14px;color:var(--ink-soft)}
+.menu.rose{background:var(--rose);box-shadow:0 6px 0 var(--rose-deep);color:#fff}
+.menu.rose .ico{background:#fff}
+.menu.rose .desc{color:#FFE6EF}
+.menu.pink .ico{background:var(--rose-tint)}
+.bottom{display:flex;align-items:center;gap:10px;margin-top:auto}
+.seg{display:flex;background:var(--card);border-radius:22px;padding:4px;flex:1}
+.seg button{border:0;cursor:pointer;flex:1;min-height:42px;border-radius:18px;background:transparent;font-weight:800;font-size:14px}
+.seg button.on{background:var(--ink);color:#fff}
+.set-card .seg{background:var(--lilac)}
+.set-card .seg button.on{background:var(--violet)}
+
+/* timer */
+.timebox{display:flex;flex-direction:column;gap:8px}
+.timebox .row{display:flex;justify-content:space-between;font-weight:800;font-size:14px}
+.timebox .row .secs{color:var(--rose-deep);font-variant-numeric:tabular-nums}
+.bar{height:14px;border-radius:7px;background:#F3D6E2;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:7px;background:var(--rose);width:100%}
+.bar.low i{background:var(--wrong)}
+.scorebar{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:20px;padding:12px 18px;margin-top:auto}
+.scorebar small{display:block;font-size:13px;color:var(--ink-soft)}
+.scorebar strong{font-family:var(--display);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums}
+
+/* levels */
+.note{font-size:14px;color:var(--ink-soft);margin:0}
+.tower{font-weight:800;font-size:13px;letter-spacing:1.2px;color:var(--rose-deep);text-transform:uppercase;margin-bottom:-6px}
+.lvls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.lvl{border:0;cursor:pointer;background:var(--card);border-radius:20px;padding:10px 0;min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 4px 0 var(--rose-line)}
+.lvl .num{font-family:var(--display);font-weight:700;font-size:28px;line-height:1}
+.lvl .st{display:flex;gap:1px}
+.lvl.locked{background:var(--locked);color:var(--locked-ink);box-shadow:none;cursor:default}
+.lvl.sel{outline:3px solid var(--gold);outline-offset:3px}
+.lvl.next{background:var(--rose);color:#fff;box-shadow:0 4px 0 var(--rose-deep)}
+.detail{background:var(--card);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.detail h2{margin:0;font-size:16px;font-weight:800}
+.detail p{margin:0;font-size:14px;color:var(--ink-soft)}
+.detail .btn{margin-top:8px}
+
+/* results */
+.res{align-items:center;text-align:center}
+.res h1{font-family:var(--display);font-weight:700;font-size:34px;color:var(--rose);margin:0;line-height:1.1;text-wrap:balance}
+.bigstars{display:flex;gap:8px;align-items:flex-end;justify-content:center}
+.bigstars svg{animation:twinkle .6s backwards}
+.bigstars svg:nth-child(2){animation-delay:.15s}
+.bigstars svg:nth-child(3){animation-delay:.3s}
+@keyframes twinkle{0%{transform:scale(.3) rotate(-30deg);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.stats{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stats div{background:var(--card);border-radius:18px;padding:12px 0}
+.stats strong{display:block;font-family:var(--display);font-weight:700;font-size:23px;font-variant-numeric:tabular-nums}
+.stats span{font-size:13px;color:var(--ink-soft)}
+.panel{width:100%;box-sizing:border-box;background:var(--lav);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.panel b{font-size:15px}
+.tricky{display:flex;gap:8px;flex-wrap:wrap}
+.tricky span{padding:8px 14px;border-radius:14px;background:var(--card);font-family:var(--display);font-weight:700;font-size:18px}
+.banner{width:100%;box-sizing:border-box;background:var(--rose);color:#fff;border-radius:20px;padding:14px 16px;font-weight:800}
+.banner.soft{background:var(--rose-tint);color:var(--rose-deep)}
+
+/* scale */
+.scale-wrap{position:relative;width:100%;max-width:360px;cursor:pointer}
+.labels{position:relative;height:56px;width:100%;max-width:360px}
+.labels button{position:absolute;top:0;transform:translateX(-50%);border:0;background:transparent;cursor:pointer;width:38px;padding:4px 0;border-radius:12px;display:flex;flex-direction:column;align-items:center}
+.labels button .s{font-family:var(--display);font-weight:700;font-size:16px}
+.labels button .l{font-size:12px;font-weight:800;color:var(--ink-soft)}
+.labels button.acc .s,.labels button.acc .l{color:var(--rose)}
+.labels button.on{background:var(--rose-tint)}
+.keyinfo{background:var(--card);border-radius:20px;padding:14px 16px;display:flex;gap:12px;align-items:center;font-size:14px;line-height:1.4}
+.keyinfo .sym{width:40px;height:40px;border-radius:20px;background:var(--rose-tint);color:var(--rose);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px;font-weight:700}
+
+/* lessons */
+.dots{display:flex;gap:6px;justify-content:center;margin-top:-6px}
+.dots i{width:10px;height:10px;border-radius:5px;background:var(--lav)}
+.dots i.on{background:var(--violet)}
+.dots i.now{background:var(--rose);width:22px}
+.lesson-text{background:var(--card);border-radius:22px;padding:18px;font-size:18px;line-height:1.5}
+.lesson-text b{color:var(--rose-deep)}
+.lesson-num{font-family:var(--display);font-weight:700;font-size:24px;color:var(--violet)}
+.menu.rose .lesson-num{color:var(--rose)}
+.lesson-num.done{background:var(--right-tint)!important}
+
+/* settings */
+.set-card{background:var(--card);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.set-card h2{margin:0;font-size:15px;font-weight:800}
+.set-card p{margin:0;font-size:13px;color:var(--ink-soft)}
+.set-card .chips{justify-content:flex-start}
+.set-card .chip{background:var(--lilac)}
+.set-card .chip.on{background:var(--ink);color:#fff}
+.stepper{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stepper>span{font-size:14px;color:var(--ink-soft)}
+.stepper div{display:flex;align-items:center;gap:8px}
+.stepper button{border:0;cursor:pointer;width:44px;height:44px;border-radius:22px;background:var(--lilac);font-size:22px;font-weight:800}
+.stepper button[disabled]{opacity:.4;cursor:default}
+.stepper output{font-family:var(--display);font-weight:700;font-size:18px;min-width:92px;text-align:center}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.switch{border:0;cursor:pointer;width:58px;height:34px;border-radius:17px;background:var(--lav);position:relative;flex-shrink:0}
+.switch::after{content:"";position:absolute;left:4px;top:4px;width:26px;height:26px;border-radius:13px;background:#fff;transition:left .15s}
+.switch[aria-checked="true"]{background:var(--rose)}
+.switch[aria-checked="true"]::after{left:28px}
+.text-in{font:inherit;font-weight:700;border:2px solid var(--lav);border-radius:14px;padding:10px 12px;color:var(--ink);background:var(--card);min-height:24px}
+.text-in:focus{outline:none;border-color:var(--violet)}
+.vf-err{color:var(--wrong-deep);font-weight:700;text-align:center;padding:24px 8px;margin:0}
+
+:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<main class="app" id="app" aria-live="polite"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+<script>
+(function(){
+const VF = window.Vex && window.Vex.Flow;
+const INK = '#4A1D4F', ROSE = '#C2306E', RIGHT = '#2B6CB0';
+const LET = ['C','D','E','F','G','A','B'];
+const SOL = ['Do','Re','Mi','Fa','So','La','Si'];
+const SEMI = [0,2,4,5,7,9,11];
+const KEYS = {
+  C:{label:'C major', short:'', acc:{}, info:'No sharps or flats by the clef, so every note is plain.', sym:'♮'},
+  F:{label:'F major', short:'1♭', acc:{6:-1}, info:'The ♭ by the clef sits on the Si line, so every Si is Si♭ (B♭).', sym:'♭'},
+  G:{label:'G major', short:'1♯', acc:{3:1}, info:'The ♯ by the clef sits on the Fa line, so every Fa is Fa♯ (F♯).', sym:'♯'},
+  D:{label:'D major', short:'2♯', acc:{3:1,0:1}, info:'Two ♯ by the clef: every Fa is Fa♯ and every Do is Do♯.', sym:'♯'}
+};
+const SCALE_START = {C:28, F:31, G:32, D:29};
+const LEVELS = [
+  {n:1,time:10,rounds:12},{n:1,time:7,rounds:15},{n:1,time:5,rounds:15},
+  {n:2,time:12,rounds:12},{n:2,time:9,rounds:12},{n:2,time:7,rounds:12},
+  {n:4,time:16,rounds:10},{n:4,time:13,rounds:10},{n:4,time:10,rounds:10}
+];
+const TOWERS = [['Tower 1 · One note',0],['Tower 2 · Two notes',3],['Tower 3 · Four notes',6]];
+const NOTE_WORD = {1:'One note',2:'Two notes',4:'Four notes'};
+const PRESETS = {
+  mid:{label:'Around middle C', treble:[28,35], bass:[22,28], grand:[24,33]},
+  inside:{label:'Inside the staff', treble:[30,38], bass:[18,26], grand:[18,38]},
+  ledger:{label:'+ Ledger lines', treble:[26,42], bass:[14,30], grand:[14,42]}
+};
+
+/* ---------- state ---------- */
+const S = {
+  screen:'home',
+  settings:{names:'solfege', staff:'treble', low:17, high:40, key:'F', sound:true, name:''},
+  progress:{best:[0,0,0,0,0,0,0,0,0], practiced:0, lessons:[]},
+  savedAt:0, sel:null, scaleKey:null, scaleSel:null
+};
+let P = {n:1, streak:0}, G = null, R = null, lastQ = '';
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const rint = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const liOf = step => ((step % 7) + 7) % 7;
+const octOf = step => Math.floor(step / 7);
+function accSym(li, key){ const a = KEYS[key || S.settings.key].acc[li] || 0; return a < 0 ? '♭' : a > 0 ? '♯' : ''; }
+function names(li, key){ const s = accSym(li, key); return {sol: SOL[li] + s, let: LET[li] + s}; }
+function label(lis, key){
+  const parts = lis.map(li => names(li, key)), m = S.settings.names;
+  const sol = parts.map(p => p.sol).join(' · '), let_ = parts.map(p => p.let).join(' · ');
+  if (m === 'letter') return {main: let_};
+  if (m === 'both') return {main: sol, sub: let_};
+  return {main: sol};
+}
+function spoken(lis, key){
+  const parts = lis.map(li => names(li, key));
+  const sol = parts.map(p => p.sol).join(' · '), let_ = parts.map(p => p.let).join(' · ');
+  return S.settings.names === 'letter' ? let_ : sol + ' (' + let_ + ')';
+}
+function plainName(step){ const li = liOf(step); return SOL[li] + ' · ' + LET[li] + octOf(step); }
+function freq(step, key){
+  const li = liOf(step), a = KEYS[key].acc[li] || 0;
+  const midi = 12 * (octOf(step) + 1) + SEMI[li] + a;
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+function staffMode(){ return S.settings.staff; }
+function totalStars(){ return S.progress.best.reduce((a,b) => a + b, 0); }
+function unlocked(i){ return i === 0 || S.progress.best[i-1] >= 2; }
+function nextLevel(){ for (let i = 0; i < 9; i++){ if (unlocked(i) && S.progress.best[i] < 2) return i; } return 8; }
+
+/* ---------- icons ---------- */
+const I = {
+  back:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
+  close:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  chev:c => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`,
+  crown:(c,s=24) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 18h18l-2-10-5 4-2-7-2 7-5-4z"/></svg>`,
+  flower:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A3E9D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="9" r="3"/><path d="M12 6c0-2 1-3 2.5-3M9.2 8c-2-.5-3.4.3-3.7 1.7M14.8 8c2-.5 3.4.3 3.7 1.7M10 11.5c-1.6 1.2-1.8 2.8-1 3.8M14 11.5c1.6 1.2 1.8 2.8 1 3.8M12 12v9"/></svg>',
+  castle:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C2306E" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V10l3 2V7l3 2V4l2 2 2-2v5l3-2v5l3-2v11z"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg>',
+  stairs:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C2306E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 20h4v-4h4v-4h4V8h4V4"/></svg>',
+  tick:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1D4E80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+  book:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A3E9D" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7M9 12h5"/></svg>',
+  gear:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
+  check:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+  cross:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  play:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>',
+  lock:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7E6480" stroke-width="2.5" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  heart:on => on
+    ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="#E0548A" aria-hidden="true"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>'
+    : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D7A9BE" stroke-width="2" aria-hidden="true"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>',
+  star:(on,s=18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${on?'#F2B630':'#F3E3EA'}" stroke="${on?'#B9831A':'#D7A9BE'}" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>`
+};
+
+/* ---------- sound ---------- */
+let AC = null;
+function audio(){
+  if (!AC){ try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ AC = null; } }
+  if (AC && AC.state === 'suspended') AC.resume().catch(()=>{});
+  return AC;
+}
+function tone(f, delay, dur, vol){
+  const a = audio(); if (!a) return;
+  const t = a.currentTime + delay;
+  const g = a.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  g.connect(a.destination);
+  [['triangle',1,1],['sine',2,0.3],['sine',3,0.08]].forEach(([type,m,v]) => {
+    const o = a.createOscillator(); o.type = type; o.frequency.value = f * m;
+    const og = a.createGain(); og.gain.value = v;
+    o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 0.05);
+  });
+}
+function playSteps(steps, key, gap){
+  if (!S.settings.sound) return;
+  steps.forEach((s, i) => tone(freq(s, key || S.settings.key), i * (gap || 0.38), 1.2, 0.22));
+}
+
+/* ---------- saving ---------- */
+const LS = 'note-quest-v1';
+let dbDoc = null, saveTimer = null;
+function merge(d){
+  if (!d || typeof d !== 'object') return;
+  if (d.settings && typeof d.settings === 'object'){
+    const s = d.settings, o = S.settings;
+    if (['solfege','letter','both'].includes(s.names)) o.names = s.names;
+    if (['treble','bass','grand'].includes(s.staff)) o.staff = s.staff;
+    if (Number.isInteger(s.low) && Number.isInteger(s.high) && s.low >= 14 && s.high <= 42 && s.high - s.low >= 3){ o.low = s.low; o.high = s.high; }
+    if (KEYS[s.key]) o.key = s.key;
+    if (typeof s.sound === 'boolean') o.sound = s.sound;
+    if (typeof s.name === 'string') o.name = s.name.slice(0, 16);
+  }
+  if (d.progress && typeof d.progress === 'object'){
+    const b = d.progress.best;
+    if (Array.isArray(b) && b.length === 9) S.progress.best = b.map(v => clamp(parseInt(v) || 0, 0, 3));
+    if (Number.isFinite(d.progress.practiced)) S.progress.practiced = Math.max(0, d.progress.practiced | 0);
+    if (Array.isArray(d.progress.lessons)) S.progress.lessons = d.progress.lessons.filter(v => Number.isInteger(v) && v >= 0 && v < 5);
+    else if (S.settings.staff !== 'treble') S.settings.staff = 'treble'; /* saved before lessons existed: start on the top staff */
+  }
+  if (Number.isFinite(d.savedAt)) S.savedAt = d.savedAt;
+}
+function snapshot(){ return {settings:{...S.settings}, progress:{best:S.progress.best.slice(), practiced:S.progress.practiced, lessons:S.progress.lessons.slice()}, savedAt:S.savedAt}; }
+function save(){
+  S.savedAt = Date.now();
+  const data = snapshot();
+  try { localStorage.setItem(LS, JSON.stringify(data)); } catch(e){}
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { if (dbDoc) dbDoc.set(data).catch(()=>{}); }, 800);
+}
+try { merge(JSON.parse(localStorage.getItem(LS) || 'null')); } catch(e){}
+async function connect(){
+  try {
+    if (!window.claude || !window.claude.use) return;
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) return;
+    const uid = await user.id(); if (!uid) return;
+    dbDoc = db.doc('data/users/' + uid + '/progress');
+    const snap = await dbDoc.get();
+    const remote = snap.exists ? snap.data() : null;
+    if (remote && (remote.savedAt || 0) > (S.savedAt || 0)){
+      merge(remote);
+      try { localStorage.setItem(LS, JSON.stringify(snapshot())); } catch(e){}
+      if (['home','levels','settings','scale'].includes(S.screen)) render();
+    } else if (S.savedAt){
+      dbDoc.set(snapshot()).catch(()=>{});
+    }
+  } catch(e){ /* stay on this phone only */ }
+}
+
+/* ---------- questions ---------- */
+function pools(){
+  const {staff, low, high} = S.settings, out = [];
+  if (staff === 'treble'){
+    let lo = Math.max(low, 26), hi = Math.min(high, 42);
+    if (hi - lo < 3){ lo = 30; hi = 38; }
+    out.push({staff:'treble', lo, hi});
+  } else if (staff === 'bass'){
+    let lo = Math.max(low, 14), hi = Math.min(high, 30);
+    if (hi - lo < 3){ lo = 18; hi = 26; }
+    out.push({staff:'bass', lo, hi});
+  } else {
+    const tl = Math.max(low, 28), th = Math.min(high, 42), bl = Math.max(low, 14), bh = Math.min(high, 27);
+    if (th - tl >= 2) out.push({staff:'treble', lo:tl, hi:th});
+    if (bh - bl >= 2) out.push({staff:'bass', lo:bl, hi:bh});
+    if (!out.length) out.push({staff:'treble', lo:30, hi:38});
+  }
+  return out;
+}
+function makeQuestion(n){
+  const ps = pools();
+  const total = ps.reduce((s, p) => s + p.hi - p.lo + 1, 0);
+  let r = Math.random() * total, pool = ps[0];
+  for (const p of ps){ r -= p.hi - p.lo + 1; if (r < 0){ pool = p; break; } }
+  let steps, sig, tries = 0;
+  do {
+    steps = []; let prev = null;
+    for (let i = 0; i < n; i++){
+      let s, t = 0;
+      do { s = prev === null ? rint(pool.lo, pool.hi) : clamp(prev + rint(-4, 4), pool.lo, pool.hi); t++; }
+      while (s === prev && t < 20);
+      steps.push(s); prev = s;
+    }
+    sig = steps.join(',');
+    tries++;
+  } while (sig === lastQ && tries < 20);
+  lastQ = sig;
+  const correct = steps.map(liOf);
+  const key = a => a.join(',');
+  let opts;
+  if (n === 1){
+    opts = [correct].concat(shuffle([0,1,2,3,4,5,6].filter(x => x !== correct[0])).slice(0, 3).map(x => [x]));
+  } else {
+    const seen = new Set([key(correct)]); opts = [correct]; let t = 0;
+    while (opts.length < 4 && t < 300){
+      t++;
+      const m = correct.slice();
+      const changes = rint(1, n === 2 ? 2 : 3);
+      shuffle([...Array(n).keys()]).slice(0, changes).forEach(pos => {
+        m[pos] = (m[pos] + [1,-1,2,-2][rint(0,3)] + 7) % 7;
+      });
+      if (!seen.has(key(m))){ seen.add(key(m)); opts.push(m); }
+    }
+  }
+  opts = shuffle(opts);
+  return {steps, staff:pool.staff, options:opts, answer:opts.findIndex(o => key(o) === key(correct))};
+}
+function where(step, staff){
+  if (step === 28) return 'Middle C sits on its own little line, right between the two staves.';
+  const bottom = staff === 'bass' ? 18 : 30, d = step - bottom, name = staff === 'bass' ? 'bass' : 'treble';
+  if (d >= 0 && d <= 8){
+    return d % 2 === 0 ? `It sits on line ${d/2 + 1} of the ${name} staff, counting up from the bottom.`
+                       : `It sits in space ${(d+1)/2} of the ${name} staff, counting up from the bottom.`;
+  }
+  if (d < 0) return d % 2 === 0 ? `It sits on a little extra line below the ${name} staff.` : `It hangs just below the ${name} staff.`;
+  return (d - 8) % 2 === 0 ? `It sits on a little extra line above the ${name} staff.` : `It floats just above the ${name} staff.`;
+}
+
+/* ---------- staff drawing ---------- */
+function drawStaff(el, opt){
+  if (!el) return [];
+  el.innerHTML = '';
+  if (!VF){ el.innerHTML = '<p class="vf-err">The music notes could not load. Check the internet connection and open the page again.</p>'; return []; }
+  const mode = opt.mode, grand = mode === 'grand';
+  const W = 300, H = grand ? 220 : 130;
+  const notes = opt.notes || [], dur = opt.dur || 'q', colors = opt.colors || {};
+  try {
+    const r = new VF.Renderer(el, VF.Renderer.Backends.SVG);
+    r.resize(W, H);
+    const ctx = r.getContext();
+    ctx.setFillStyle(INK); ctx.setStrokeStyle(INK);
+    const x = grand ? 24 : 6, w = W - x - 6;
+    const mk = (y, clef) => {
+      const st = new VF.Stave(x, y, w);
+      st.addClef(clef);
+      if (opt.key !== 'C') st.addKeySignature(opt.key);
+      st.setStyle({fillStyle:INK, strokeStyle:INK});
+      st.setContext(ctx).draw();
+      return st;
+    };
+    let tr = null, ba = null;
+    if (mode === 'bass') ba = mk(0, 'bass');
+    else if (mode === 'treble') tr = mk(0, 'treble');
+    else {
+      tr = mk(0, 'treble'); ba = mk(90, 'bass');
+      ['brace','singleLeft','singleRight'].forEach(t => {
+        const c = new VF.StaveConnector(tr, ba); c.setType(t);
+        if (c.setStyle) c.setStyle({fillStyle:INK, strokeStyle:INK});
+        c.setContext(ctx).draw();
+      });
+    }
+    let xs = [];
+    if (notes.length){
+      const clef = notes[0].staff, stave = clef === 'bass' ? ba : tr;
+      const vn = notes.map((n, i) => {
+        const sn = new VF.StaveNote({keys:[LET[liOf(n.step)].toLowerCase() + '/' + octOf(n.step)], duration:dur, clef, auto_stem:true});
+        const c = colors[i] || INK;
+        sn.setStyle({fillStyle:c, strokeStyle:c});
+        return sn;
+      });
+      let ticks = vn.slice();
+      if (opt.pad !== false && vn.length <= 2) ticks = [new VF.GhostNote({duration:dur})].concat(vn, [new VF.GhostNote({duration:dur})]);
+      const voice = new VF.Voice({num_beats: ticks.length * (dur === 'w' ? 4 : 1), beat_value:4});
+      voice.setMode(VF.Voice.Mode.SOFT);
+      voice.addTickables(ticks);
+      new VF.Formatter().joinVoices([voice]).format([voice], stave.getNoteEndX() - stave.getNoteStartX() - 14);
+      voice.draw(ctx, stave);
+      xs = vn.map(n => (n.getAbsoluteX() + (n.getGlyphWidth ? n.getGlyphWidth() / 2 : 6)) / W);
+    }
+    const svg = el.querySelector('svg');
+    if (svg){
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.removeAttribute('width'); svg.removeAttribute('height');
+      svg.style.width = '100%'; svg.style.height = 'auto';
+      svg.setAttribute('role', 'img');
+      svg.setAttribute('aria-label', notes.length ? 'Music staff with ' + notes.length + (notes.length > 1 ? ' notes' : ' note') : 'Music staff');
+    }
+    return xs;
+  } catch(e){
+    el.innerHTML = '<p class="vf-err">Something went wrong drawing the notes. Tap Next to try another.</p>';
+    return [];
+  }
+}
+
+/* ---------- screens ---------- */
+function header(title, extra, backAct){
+  return `<div class="top"><button class="icon-btn" data-act="${backAct || 'go'}" data-arg="home" aria-label="${backAct === 'quit' ? 'Quit level' : 'Back'}">${backAct === 'quit' ? I.close : I.back}</button><h1>${title}</h1>${extra || '<span style="width:44px"></span>'}</div>`;
+}
+function optButtons(q, answered, chosen, key){
+  const n = q.steps.length;
+  return `<div class="opts ${n > 1 ? 'seq' : ''} ${n === 4 ? 'seq4' : ''}">` + q.options.map((o, i) => {
+    const l = label(o, key);
+    let cls = '', mark = '';
+    if (answered){
+      if (i === q.answer){ cls = 'right'; mark = I.check; }
+      else if (i === chosen){ cls = 'wrong'; mark = I.cross; }
+      else cls = 'dim';
+    }
+    return `<button class="opt ${cls}" data-act="answer" data-arg="${i}" ${answered ? 'disabled' : ''}><span class="main">${l.main}${mark}</span>${l.sub ? `<span class="sub">${l.sub}</span>` : ''}</button>`;
+  }).join('') + '</div>';
+}
+
+function homeView(){
+  const s = S.settings, nl = nextLevel();
+  const greet = s.name ? 'Hi, Princess ' + esc(s.name) : 'Hi, Princess!';
+  return `
+  <div class="top">
+    <div class="hello"><div class="avatar">${I.crown('#7A3E9D')}</div><span>${greet}</span></div>
+    <div class="pill" aria-label="${totalStars()} stars">${I.star(true)}<span>${totalStars()}</span></div>
+  </div>
+  <div class="brand"><h1>Note Quest</h1><p>Read the notes, earn your crown</p></div>
+  <div class="card"><div class="staff" id="staff"></div></div>
+  <button class="menu" data-act="go" data-arg="practice"><span class="ico">${I.flower}</span><span class="txt"><span class="name">Practice Garden</span><span class="desc">No clock. Take your time.</span></span>${I.chev('#7A3E9D')}</button>
+  <button class="menu rose" data-act="go" data-arg="levels"><span class="ico">${I.castle}</span><span class="txt"><span class="name">Royal Challenge</span><span class="desc">Beat the clock · Level ${nl + 1} of 9</span></span>${I.chev('#FFFFFF')}</button>
+  <button class="menu pink" data-act="go" data-arg="scale"><span class="ico">${I.stairs}</span><span class="txt"><span class="name">Scale Castle</span><span class="desc">See and hear ${KEYS[s.key].label}</span></span>${I.chev('#C2306E')}</button>
+  <button class="menu" data-act="go" data-arg="lessons"><span class="ico">${I.book}</span><span class="txt"><span class="name">Bass Clef School</span><span class="desc">${lessonsDone() >= LESSONS.length ? 'She can read the bottom staff!' : 'Learn the bottom staff · ' + lessonsDone() + ' of ' + LESSONS.length + ' lessons'}</span></span>${I.chev('#7A3E9D')}</button>
+  <div class="bottom">
+    <div class="seg" role="group" aria-label="Note names">
+      <button class="${s.names === 'letter' ? 'on' : ''}" data-act="set" data-k="names" data-v="letter">A B C</button>
+      <button class="${s.names === 'solfege' ? 'on' : ''}" data-act="set" data-k="names" data-v="solfege">Do Re Mi</button>
+      <button class="${s.names === 'both' ? 'on' : ''}" data-act="set" data-k="names" data-v="both">Both</button>
+    </div>
+    <button class="icon-btn" data-act="go" data-arg="settings" aria-label="Settings">${I.gear}</button>
+  </div>`;
+}
+function homeAfter(){
+  drawStaff($('staff'), {mode:'treble', key:S.settings.key, notes:[{step:33, staff:'treble'}], colors:{0:ROSE}});
+}
+
+function practiceView(){
+  const q = P.q, ok = P.answered && P.chosen === q.answer;
+  let fb = '';
+  if (P.answered){
+    const lis = q.steps.map(liOf);
+    const msg = ok ? ['Lovely!','Royal work!','Sparkling!','You got it!'][P.streak % 4] : 'Nearly!';
+    const extra = q.steps.length === 1 ? where(q.steps[0], q.staff) : (ok ? 'Every note in the right order.' : 'Listen to them one more time.');
+    fb = `<div class="feedback ${ok ? 'ok' : 'no'}">${ok ? I.star(true, 32) : ''}<div><b>${msg} That’s ${spoken(lis)}.</b><span>${extra}</span></div></div>`;
+  } else if (P.hint){
+    fb = `<div class="feedback hint"><div><b>Hint</b><span>${q.steps.length > 1 ? 'The first note: ' : ''}${where(q.steps[0], q.staff)}</span></div></div>`;
+  }
+  const streak = `<div class="pill" aria-label="${P.streak} in a row">${I.heart(true)}<span>${P.streak}</span></div>`;
+  return `
+  ${header('Practice Garden', streak)}
+  <div class="chips" role="group" aria-label="Notes per card">
+    ${[1,2,4].map(n => `<button class="chip ${P.n === n ? 'on' : ''}" data-act="pn" data-arg="${n}">${NOTE_WORD[n]}</button>`).join('')}
+  </div>
+  <div class="card"><div class="staff" id="staff"></div><div class="prompt">${q.steps.length === 1 ? 'What note is this?' : 'Name the notes, left to right'}</div></div>
+  ${optButtons(q, P.answered, P.chosen)}
+  ${fb}
+  <div class="btn-row">
+    ${P.answered
+      ? `<button class="btn" data-act="replay">${I.play} Hear it</button><button class="btn violet wide" data-act="pnext">Next card</button>`
+      : `<button class="btn" data-act="hint" ${P.hint ? 'disabled' : ''}>Show hint</button><button class="btn violet wide" data-act="pnext">Skip</button>`}
+  </div>`;
+}
+function practiceAfter(){
+  const q = P.q, ok = P.answered && P.chosen === q.answer, colors = {};
+  if (ok) q.steps.forEach((_, i) => colors[i] = RIGHT);
+  drawStaff($('staff'), {mode:staffMode(), key:S.settings.key, notes:q.steps.map(s => ({step:s, staff:q.staff})), colors});
+}
+
+function rangeText(){
+  const ps = pools(), lo = Math.min(...ps.map(p => p.lo)), hi = Math.max(...ps.map(p => p.hi));
+  const st = {treble:'Treble', bass:'Bass', grand:'Both hands'}[S.settings.staff];
+  return st + ' · ' + plainName(lo) + ' to ' + plainName(hi);
+}
+function levelsView(){
+  if (S.sel === null || !unlocked(S.sel)) S.sel = nextLevel();
+  const L = LEVELS[S.sel];
+  const tiles = i => {
+    const lock = !unlocked(i), b = S.progress.best[i];
+    if (lock) return `<div class="lvl locked" aria-label="Level ${i+1}, locked"><span class="num">${i+1}</span>${I.lock}</div>`;
+    const cls = (i === S.sel ? ' sel' : '') + (i === nextLevel() && b < 2 ? ' next' : '');
+    return `<button class="lvl${cls}" data-act="sel" data-arg="${i}" aria-label="Level ${i+1}, ${b} stars"><span class="num">${i+1}</span><span class="st">${[0,1,2].map(k => I.star(k < b, 14)).join('')}</span></button>`;
+  };
+  return `
+  ${header('Royal Challenge')}
+  <p class="note">Win 2 stars to open the next level. Every level gives you 3 hearts.</p>
+  ${TOWERS.map(([t, start]) => `<div class="tower">${t}</div><div class="lvls">${[start, start+1, start+2].map(tiles).join('')}</div>`).join('')}
+  <div class="detail">
+    <h2>Level ${S.sel + 1} · ${NOTE_WORD[L.n]}</h2>
+    <p>${L.rounds} rounds · ${L.time} seconds each</p>
+    <p>${KEYS[S.settings.key].label} · ${rangeText()}</p>
+    <button class="btn rose" data-act="start" data-arg="${S.sel}">${I.play} Play level ${S.sel + 1}</button>
+  </div>`;
+}
+
+function playView(){
+  const L = LEVELS[G.level], q = G.q;
+  const hearts = `<div class="hearts" aria-label="${G.hearts} hearts left">${[0,1,2].map(i => I.heart(i < G.hearts)).join('')}</div>`;
+  return `
+  ${header('Level ' + (G.level + 1), hearts, 'quit')}
+  <div class="timebox">
+    <div class="row"><span>Round ${G.round + 1} of ${L.rounds}</span><span class="secs" id="secs">${L.time}s</span></div>
+    <div class="bar" id="bar"><i id="fill"></i></div>
+  </div>
+  <div class="card"><div class="staff" id="staff"></div><div class="prompt small">${q.steps.length === 1 ? 'Quick! What note is this?' : 'Name the notes, left to right'}</div></div>
+  ${optButtons(q, G.answered, G.chosen)}
+  <div class="scorebar"><div><small>Score</small><strong>${G.score.toLocaleString()}</strong></div><div style="text-align:right"><small>Streak</small><strong style="color:var(--rose)">×${G.streak}</strong></div></div>`;
+}
+function playAfter(){
+  const q = G.q, colors = {};
+  if (G.answered && G.chosen === q.answer) q.steps.forEach((_, i) => colors[i] = RIGHT);
+  drawStaff($('staff'), {mode:staffMode(), key:S.settings.key, notes:q.steps.map(s => ({step:s, staff:q.staff})), colors});
+  if (G.answered){
+    const left = Math.max(0, G.end - G.answeredAt), L = LEVELS[G.level];
+    const f = $('fill'); if (f) f.style.width = (100 * left / (L.time * 1000)) + '%';
+    const s = $('secs'); if (s) s.textContent = Math.ceil(left / 1000) + 's';
+  }
+}
+
+function resultsView(){
+  const r = R, L = LEVELS[r.level];
+  const title = r.failed ? 'Out of hearts!' : r.stars >= 2 ? `Level ${r.level + 1} complete!` : `Level ${r.level + 1} done`;
+  const avg = r.times.length ? (r.times.reduce((a,b) => a+b, 0) / r.times.length / 1000).toFixed(1) + 's' : '–';
+  const tricky = Object.entries(r.missed).sort((a,b) => b[1] - a[1]).slice(0, 4).map(([k]) => k);
+  let banner = '';
+  if (r.unlockedNew) banner = `<div class="banner">Level ${r.level + 2} unlocked!</div>`;
+  else if (r.level === 8 && r.stars >= 2) banner = `<div class="banner">You finished every tower. All hail the queen of notes!</div>`;
+  else if (r.stars < 2) banner = `<div class="banner soft">Win 2 stars to open the next level. You can do it!</div>`;
+  const canNext = r.level < 8 && unlocked(r.level + 1);
+  return `
+  <div class="app res" style="padding:0;gap:16px;display:flex;flex-direction:column;flex:1">
+    ${I.crown('#B9831A', 72)}
+    <h1>${title}</h1>
+    <div class="bigstars" aria-label="${r.stars} of 3 stars">${I.star(r.stars >= 1, 54)}${I.star(r.stars >= 2, 68)}${I.star(r.stars >= 3, 54)}</div>
+    <div class="stats">
+      <div><strong>${r.correct}/${L.rounds}</strong><span>correct</span></div>
+      <div><strong>${avg}</strong><span>per answer</span></div>
+      <div><strong>×${r.bestStreak}</strong><span>best streak</span></div>
+    </div>
+    <div class="stats" style="grid-template-columns:minmax(0,1fr)"><div><strong>${r.score.toLocaleString()}</strong><span>points</span></div></div>
+    ${tricky.length ? `<div class="panel"><b>Tricky notes to practise</b><div class="tricky">${tricky.map(t => `<span>${t}</span>`).join('')}</div></div>` : ''}
+    ${banner}
+    <div class="btn-row" style="width:100%">
+      <button class="btn ghost" data-act="start" data-arg="${r.level}">Play again</button>
+      ${canNext ? `<button class="btn rose wide" data-act="start" data-arg="${r.level + 1}">Next level</button>` : `<button class="btn rose wide" data-act="go" data-arg="levels">Level map</button>`}
+    </div>
+  </div>`;
+}
+
+function scaleView(){
+  const k = S.scaleKey || S.settings.key, start = SCALE_START[k];
+  const steps = [...Array(8).keys()].map(i => start + i);
+  return `
+  ${header('Scale Castle')}
+  <div class="chips" role="group" aria-label="Scale">
+    ${Object.keys(KEYS).map(id => `<button class="chip ${id === k ? 'on' : ''}" data-act="skey" data-arg="${id}">${KEYS[id].label}${KEYS[id].short ? ' · ' + KEYS[id].short : ''}</button>`).join('')}
+  </div>
+  <div class="card">
+    <div class="scale-wrap" id="swrap"><div class="staff" id="staff"></div></div>
+    <div class="labels" id="labels">${steps.map((s, i) => {
+      const n = names(liOf(s), k), acc = accSym(liOf(s), k) !== '';
+      return `<button class="${acc ? 'acc' : ''} ${S.scaleSel === i ? 'on' : ''}" data-act="snote" data-arg="${i}" aria-label="${n.sol}, ${n.let}"><span class="s">${n.sol}</span><span class="l">${n.let}</span></button>`;
+    }).join('')}</div>
+  </div>
+  <div class="keyinfo"><div class="sym" aria-hidden="true">${KEYS[k].sym}</div><div>${KEYS[k].info}</div></div>
+  <p class="note" style="text-align:center">Tap a note to hear it</p>
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:auto">
+    <button class="btn" data-act="splay">${I.play} Play the scale</button>
+    <button class="btn violet" data-act="squiz">Quiz me in ${KEYS[k].label}</button>
+  </div>`;
+}
+let scaleXs = [];
+function scaleAfter(){
+  const k = S.scaleKey || S.settings.key, start = SCALE_START[k];
+  const notes = [...Array(8).keys()].map(i => ({step:start + i, staff:'treble'}));
+  const colors = {}; if (S.scaleSel !== null) colors[S.scaleSel] = ROSE;
+  scaleXs = drawStaff($('staff'), {mode:'treble', key:k, notes, colors, dur:'w', pad:false});
+  const btns = document.querySelectorAll('#labels button');
+  btns.forEach((b, i) => { if (scaleXs[i] !== undefined) b.style.left = (scaleXs[i] * 100) + '%'; else b.style.left = (12 + i * 11) + '%'; });
+}
+function scaleTap(i){
+  const k = S.scaleKey || S.settings.key;
+  S.scaleSel = i;
+  playSteps([SCALE_START[k] + i], k);
+  scaleAfter();
+  document.querySelectorAll('#labels button').forEach((b, j) => b.classList.toggle('on', j === i));
+}
+let scaleTimer = null;
+function playScale(){
+  clearInterval(scaleTimer);
+  let i = 0; audio();
+  scaleTap(0);
+  scaleTimer = setInterval(() => { i++; if (i > 7 || S.screen !== 'scale'){ clearInterval(scaleTimer); return; } scaleTap(i); }, 420);
+}
+
+function settingsView(){
+  const s = S.settings, seg = (k, list) => `<div class="seg" role="group">${list.map(([v, t]) => `<button class="${s[k] === v ? 'on' : ''}" data-act="set" data-k="${k}" data-v="${v}">${t}</button>`).join('')}</div>`;
+  const preset = Object.entries(PRESETS).find(([, p]) => p[s.staff][0] === s.low && p[s.staff][1] === s.high);
+  return `
+  ${header('Castle settings')}
+  <div class="set-card">
+    <h2><label for="pname">Princess name</label></h2>
+    <input class="text-in" id="pname" maxlength="16" autocomplete="off" placeholder="Type her name" value="${esc(s.name)}">
+  </div>
+  <div class="set-card">
+    <h2>Note names</h2>
+    ${seg('names', [['letter','A B C'],['solfege','Do Re Mi'],['both','Both']])}
+    <p>Do is always C. Start with Do Re Mi, move to Both, then to A B C.</p>
+  </div>
+  <div class="set-card">
+    <h2>Staff</h2>
+    ${seg('staff', [['treble','Treble'],['bass','Bass'],['grand','Both hands']])}
+    ${lessonsDone() < LESSONS.length ? `<p>Bass and Both hands work best after the Bass Clef School lessons (${lessonsDone()} of ${LESSONS.length} done).</p>` : ''}
+  </div>
+  <div class="set-card">
+    <h2>Note range</h2>
+    <div class="stepper"><span>Lowest</span><div>
+      <button data-act="range" data-k="low" data-v="-1" aria-label="Lower the lowest note" ${s.low <= 14 ? 'disabled' : ''}>−</button>
+      <output>${plainName(s.low)}</output>
+      <button data-act="range" data-k="low" data-v="1" aria-label="Raise the lowest note" ${s.low >= s.high - 3 ? 'disabled' : ''}>+</button>
+    </div></div>
+    <div class="stepper"><span>Highest</span><div>
+      <button data-act="range" data-k="high" data-v="-1" aria-label="Lower the highest note" ${s.high <= s.low + 3 ? 'disabled' : ''}>−</button>
+      <output>${plainName(s.high)}</output>
+      <button data-act="range" data-k="high" data-v="1" aria-label="Raise the highest note" ${s.high >= 42 ? 'disabled' : ''}>+</button>
+    </div></div>
+    <div class="chips">${Object.entries(PRESETS).map(([id, p]) => `<button class="chip ${preset && preset[0] === id ? 'on' : ''}" data-act="preset" data-arg="${id}">${p.label}</button>`).join('')}</div>
+  </div>
+  <div class="set-card">
+    <h2>Key</h2>
+    <div class="chips">${Object.keys(KEYS).map(id => `<button class="chip ${s.key === id ? 'on' : ''}" data-act="set" data-k="key" data-v="${id}">${KEYS[id].label}${KEYS[id].short ? ' · ' + KEYS[id].short : ''}</button>`).join('')}</div>
+  </div>
+  <div class="set-card">
+    <div class="toggle-row"><div><h2 id="snd">Play the note</h2><p>Hear each note after answering</p></div>
+    <button class="switch" role="switch" aria-labelledby="snd" aria-checked="${s.sound}" data-act="sound"></button></div>
+  </div>`;
+}
+
+/* ---------- bass clef lessons ---------- */
+const LESSONS = [
+  {title:'Meet Fa', short:'The bass clef and its Fa line', pool:[23,24,25], count:4, pages:[
+    {notes:[24], hi:0, text:'This is the <b>bass clef</b>. It is for your left hand. Its two dots hug one line, and that line is always <b>Fa (F)</b>.'},
+    {notes:[23,24,25], hi:1, text:'Notes climb like stairs: line, space, line. One step up from Fa is <b>So</b>. One step down is <b>Mi</b>. Tap them to hear.'}
+  ]},
+  {title:'The lines', short:'So · Si · Re · Fa · La', pool:[18,20,22,24,26], count:5, pages:[
+    {notes:[18,20,22,24,26], text:'The five lines, from the bottom up, are <b>So, Si, Re, Fa, La</b>. Tap each one and say it out loud.'},
+    {notes:[18,20,22,24,26], text:'In letters that is G B D F A: <b>Good Boys Do Fine Always</b>. In F major songs Si gets a ♭ and becomes Si♭.'}
+  ]},
+  {title:'The spaces', short:'La · Do · Mi · So', pool:[19,21,23,25], count:5, pages:[
+    {notes:[19,21,23,25], text:'The four spaces, from the bottom up, are <b>La, Do, Mi, So</b>.'},
+    {notes:[19,21,23,25], text:'In letters that is A C E G: <b>All Cows Eat Grass</b>. The Do in space 2 is a good landmark for your left hand.'}
+  ]},
+  {title:'Up to middle C', short:'La · Si · middle Do', pool:[24,25,26,27,28], count:5, pages:[
+    {notes:[26,27,28], text:'Above the top line (La) comes <b>Si</b>, then <b>Do</b> on its own little line. That Do is <b>middle C</b>.'},
+    {notes:[28], grand:true, text:'Middle C is the bridge between your two hands. Just above the bass staff or just below the treble staff, it is the same Do.'}
+  ]},
+  {title:'Mix it up', short:'Every note on the bottom staff', pool:[18,19,20,21,22,23,24,25,26,27,28], count:6, pages:[]}
+];
+let LS_ = null; /* current lesson state */
+function lessonsDone(){ return S.progress.lessons.length; }
+function lessonsView(){
+  const done = S.progress.lessons;
+  const next = LESSONS.findIndex((_, i) => !done.includes(i));
+  return `
+  ${header('Bass Clef School')}
+  <p class="note">Five short lessons for the bottom staff. Each one ends with a quick quiz.</p>
+  ${LESSONS.map((l, i) => {
+    const ok = done.includes(i), isNext = i === next;
+    return `<button class="menu ${isNext ? 'rose' : ''}" data-act="lesson" data-arg="${i}">
+      <span class="ico lesson-num ${ok ? 'done' : ''}">${ok ? I.tick : i + 1}</span>
+      <span class="txt"><span class="name">${l.title}</span><span class="desc">${l.short}</span></span>
+      ${I.chev(isNext ? '#FFFFFF' : '#7A3E9D')}</button>`;
+  }).join('')}
+  ${done.length >= LESSONS.length && S.settings.staff === 'treble' ? `<button class="btn rose" data-act="bothon" style="flex:none">Add the bottom staff to her games</button>` : ''}`;
+}
+function startLesson(i){
+  LS_ = {i, page:0, phase: LESSONS[i].pages.length ? 'teach' : 'quiz', asked:0, right:0, q:null, answered:false, chosen:null, sel:null, last:null};
+  if (LS_.phase === 'quiz') LS_.q = lessonQ();
+  S.screen = 'lesson'; render(); window.scrollTo(0, 0);
+}
+function lessonQ(){
+  const pool = LESSONS[LS_.i].pool;
+  let s, t = 0;
+  do { s = pool[rint(0, pool.length - 1)]; t++; } while (s === LS_.last && t < 12);
+  LS_.last = s;
+  const c = liOf(s);
+  let others = shuffle([...new Set(pool.map(liOf))].filter(x => x !== c)).slice(0, 3);
+  if (others.length < 3) others = others.concat(shuffle([0,1,2,3,4,5,6].filter(x => x !== c && !others.includes(x))).slice(0, 3 - others.length));
+  const opts = shuffle([[c]].concat(others.map(x => [x])));
+  return {steps:[s], staff:'bass', options:opts, answer:opts.findIndex(o => o[0] === c)};
+}
+function lessonView(){
+  const L = LESSONS[LS_.i], total = L.pages.length + L.count;
+  const at = LS_.phase === 'teach' ? LS_.page : LS_.phase === 'quiz' ? L.pages.length + LS_.asked : total;
+  const dots = `<div class="dots" aria-label="Step ${Math.min(at + 1, total)} of ${total}">${[...Array(total).keys()].map(k => `<i class="${k < at ? 'on' : k === at ? 'now' : ''}"></i>`).join('')}</div>`;
+  const head = `<div class="top"><button class="icon-btn" data-act="go" data-arg="lessons" aria-label="Back to lessons">${I.back}</button><h1>Lesson ${LS_.i + 1} · ${L.title}</h1><span style="width:44px"></span></div>${dots}`;
+  if (LS_.phase === 'teach'){
+    const p = L.pages[LS_.page], last = LS_.page === L.pages.length - 1;
+    return `${head}
+    <div class="card"><div class="scale-wrap" id="swrap"><div class="staff" id="staff"></div></div>
+      <div class="labels" id="labels">${p.notes.map((s, i) => { const n = names(liOf(s), 'C'); const on = LS_.sel === i || (LS_.sel === null && p.hi === i);
+        return `<button class="${on ? 'on' : ''}" data-act="lnote" data-arg="${i}" aria-label="${n.sol}, ${n.let}"><span class="s">${n.sol}</span><span class="l">${n.let}</span></button>`; }).join('')}</div></div>
+    <div class="lesson-text">${p.text}</div>
+    <div class="btn-row">
+      ${LS_.page > 0 ? '<button class="btn" data-act="lprev">Back</button>' : ''}
+      <button class="btn violet wide" data-act="lnext">${last ? 'Try it!' : 'Next'}</button>
+    </div>`;
+  }
+  if (LS_.phase === 'quiz'){
+    const q = LS_.q, ok = LS_.answered && LS_.chosen === q.answer;
+    const fb = LS_.answered ? `<div class="feedback ${ok ? 'ok' : 'no'}">${ok ? I.star(true, 32) : ''}<div><b>${ok ? 'Yes!' : 'Nearly!'} That’s ${spoken(q.steps.map(liOf), 'C')}.</b><span>${where(q.steps[0], 'bass')}</span></div></div>` : '';
+    return `${head}
+    <div class="card"><div class="staff" id="staff"></div><div class="prompt">Question ${LS_.asked + 1} of ${L.count}</div></div>
+    ${optButtons(q, LS_.answered, LS_.chosen, 'C')}
+    ${fb}
+    <div class="btn-row">${LS_.answered ? `<button class="btn violet wide" data-act="lqnext">${LS_.asked + 1 >= L.count ? 'See how I did' : 'Next question'}</button>` : ''}</div>`;
+  }
+  const need = Math.ceil(L.count * 0.75), pass = LS_.right >= need, lastLesson = LS_.i === LESSONS.length - 1;
+  return `${head}
+  <div class="res" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;flex:1">
+    ${I.crown(pass ? '#B9831A' : '#D7A9BE', 72)}
+    <h1>${pass ? (lastLesson ? 'She can read the bottom staff!' : 'Lesson complete!') : 'Let’s try that again'}</h1>
+    <div class="stats" style="grid-template-columns:minmax(0,1fr)"><div><strong>${LS_.right}/${L.count}</strong><span>${pass ? 'right answers' : 'right · ' + need + ' needed to pass'}</span></div></div>
+    <div class="btn-row" style="width:100%">
+      <button class="btn ghost" data-act="lesson" data-arg="${LS_.i}">${pass ? 'Do it again' : 'Try again'}</button>
+      ${pass && !lastLesson ? `<button class="btn rose wide" data-act="lesson" data-arg="${LS_.i + 1}">Next lesson</button>` : ''}
+      ${pass && lastLesson ? `<button class="btn rose wide" data-act="bothon">Play with both hands</button>` : ''}
+      ${!pass ? `<button class="btn rose wide" data-act="go" data-arg="lessons">All lessons</button>` : ''}
+    </div>
+  </div>`;
+}
+function lessonAfter(){
+  const L = LESSONS[LS_.i];
+  if (LS_.phase === 'teach'){
+    const p = L.pages[LS_.page], hi = LS_.sel !== null ? LS_.sel : p.hi, colors = {};
+    if (hi !== undefined && hi !== null) colors[hi] = ROSE;
+    const xs = drawStaff($('staff'), {mode: p.grand ? 'grand' : 'bass', key:'C', notes:p.notes.map(s => ({step:s, staff:'bass'})), colors, dur:'w', pad: p.notes.length <= 2});
+    scaleXs = xs;
+    document.querySelectorAll('#labels button').forEach((b, i) => { b.style.left = ((xs[i] !== undefined ? xs[i] : 0.5) * 100) + '%'; });
+  } else if (LS_.phase === 'quiz'){
+    const q = LS_.q, colors = {};
+    if (LS_.answered && LS_.chosen === q.answer) colors[0] = RIGHT;
+    drawStaff($('staff'), {mode:'bass', key:'C', notes:[{step:q.steps[0], staff:'bass'}], colors});
+  }
+}
+function lessonTap(i){
+  const p = LESSONS[LS_.i].pages[LS_.page];
+  LS_.sel = i; audio(); playSteps([p.notes[i]], 'C'); render();
+}
+function lessonAnswer(i){
+  if (LS_.answered) return;
+  audio();
+  LS_.answered = true; LS_.chosen = i;
+  if (i === LS_.q.answer) LS_.right++;
+  playSteps(LS_.q.steps, 'C');
+  render();
+}
+function lessonNextQ(){
+  LS_.asked++;
+  if (LS_.asked >= LESSONS[LS_.i].count){
+    LS_.phase = 'end';
+    if (LS_.right >= Math.ceil(LESSONS[LS_.i].count * 0.75) && !S.progress.lessons.includes(LS_.i)){ S.progress.lessons.push(LS_.i); S.progress.lessons.sort(); save(); }
+    if (LS_.right >= Math.ceil(LESSONS[LS_.i].count * 0.75) && S.settings.sound){ [21,23,25,28].forEach((s, j) => tone(freq(s, 'C'), j * 0.12, 0.9, 0.18)); }
+  } else { LS_.q = lessonQ(); LS_.answered = false; LS_.chosen = null; }
+  render();
+}
+
+/* ---------- render ---------- */
+const VIEWS = {
+  lessons:[lessonsView, null, true], lesson:[lessonView, lessonAfter, true],
+  home:[homeView, homeAfter, false], practice:[practiceView, practiceAfter, true], levels:[levelsView, null, false],
+  play:[playView, playAfter, false], results:[resultsView, null, false], scale:[scaleView, scaleAfter, true], settings:[settingsView, null, false]
+};
+function render(){
+  const [view, after, lilac] = VIEWS[S.screen];
+  document.body.classList.toggle('lilac', lilac);
+  $('app').innerHTML = view();
+  if (after) after();
+}
+function go(screen){
+  if (G && G.raf) cancelAnimationFrame(G.raf);
+  clearTimeout(G && G.next); clearInterval(scaleTimer);
+  if (screen === 'practice' && !P.q) P.q = makeQuestion(P.n);
+  if (screen === 'scale'){ S.scaleSel = null; if (!S.scaleKey) S.scaleKey = S.settings.key; }
+  S.screen = screen;
+  render();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- practice ---------- */
+function newPractice(){ P.q = makeQuestion(P.n); P.answered = false; P.chosen = null; P.hint = false; render(); }
+function answerPractice(i){
+  if (P.answered) return;
+  audio();
+  P.answered = true; P.chosen = i;
+  P.streak = i === P.q.answer ? P.streak + 1 : 0;
+  S.progress.practiced++; save();
+  playSteps(P.q.steps);
+  render();
+}
+
+/* ---------- timed ---------- */
+function startLevel(i){
+  if (!unlocked(i)) return;
+  audio();
+  if (G && G.raf) cancelAnimationFrame(G.raf);
+  if (G) clearTimeout(G.next);
+  G = {level:i, round:0, hearts:3, score:0, streak:0, bestStreak:0, correct:0, times:[], missed:{}};
+  S.screen = 'play';
+  window.scrollTo(0, 0);
+  startRound();
+}
+function startRound(){
+  const L = LEVELS[G.level];
+  G.q = makeQuestion(L.n); G.answered = false; G.chosen = null;
+  G.start = performance.now(); G.end = G.start + L.time * 1000;
+  render();
+  G.raf = requestAnimationFrame(tick);
+}
+function tick(){
+  if (S.screen !== 'play' || G.answered) return;
+  const L = LEVELS[G.level], left = Math.max(0, G.end - performance.now());
+  const f = $('fill'), s = $('secs'), b = $('bar');
+  if (f) f.style.width = (100 * left / (L.time * 1000)) + '%';
+  if (s) s.textContent = Math.ceil(left / 1000) + 's';
+  if (b) b.classList.toggle('low', left < 3000);
+  if (left <= 0){ answerTimed(-1); return; }
+  G.raf = requestAnimationFrame(tick);
+}
+function answerTimed(i){
+  if (G.answered) return;
+  cancelAnimationFrame(G.raf);
+  G.answered = true; G.chosen = i; G.answeredAt = performance.now();
+  const q = G.q, ok = i === q.answer;
+  if (ok){
+    G.correct++; G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak);
+    const left = Math.max(0, G.end - G.answeredAt) / 1000;
+    G.score += 100 + Math.round(left * 10) + 10 * Math.min(G.streak, 10);
+    G.times.push(G.answeredAt - G.start);
+  } else {
+    G.hearts--; G.streak = 0;
+    const chosen = i >= 0 ? q.options[i] : null;
+    q.steps.forEach((s, p) => {
+      const li = liOf(s);
+      if (!chosen || chosen[p] !== li){ const k = spokenShort(li); G.missed[k] = (G.missed[k] || 0) + 1; }
+    });
+  }
+  playSteps(q.steps, null, 0.3);
+  render();
+  G.next = setTimeout(() => {
+    G.round++;
+    if (G.hearts <= 0 || G.round >= LEVELS[G.level].rounds) finish();
+    else startRound();
+  }, ok ? 800 : 1700);
+}
+function spokenShort(li){ const n = names(li); return S.settings.names === 'letter' ? n.let : S.settings.names === 'both' ? n.sol + ' · ' + n.let : n.sol; }
+function finish(){
+  const L = LEVELS[G.level], failed = G.hearts <= 0, p = G.correct / L.rounds;
+  const stars = failed ? 0 : p >= 0.93 ? 3 : p >= 0.8 ? 2 : p >= 0.6 ? 1 : 0;
+  const wasUnlocked = G.level < 8 && unlocked(G.level + 1);
+  S.progress.best[G.level] = Math.max(S.progress.best[G.level], stars);
+  save();
+  R = {level:G.level, stars, failed, correct:G.correct, times:G.times, bestStreak:G.bestStreak, score:G.score, missed:G.missed,
+       unlockedNew: G.level < 8 && !wasUnlocked && unlocked(G.level + 1)};
+  S.sel = R.unlockedNew ? G.level + 1 : G.level;
+  S.screen = 'results';
+  render();
+  if (stars > 0 && S.settings.sound){ const k = S.settings.key, base = SCALE_START[k]; [0,2,4,7].forEach((d, j) => tone(freq(base + d, k), j * 0.12, 0.9, 0.18)); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if (!t){
+    const wrap = e.target.closest('#swrap');
+    if (wrap && scaleXs.length){
+      const r = wrap.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width;
+      let best = 0; scaleXs.forEach((x, i) => { if (Math.abs(x - fx) < Math.abs(scaleXs[best] - fx)) best = i; });
+      if (S.screen === 'lesson') lessonTap(best); else scaleTap(best);
+    }
+    return;
+  }
+  const act = t.dataset.act, arg = t.dataset.arg;
+  switch (act){
+    case 'go': go(arg); break;
+    case 'quit': go('levels'); break;
+    case 'set': {
+      const k = t.dataset.k, v = t.dataset.v;
+      S.settings[k] = v;
+      if (k === 'staff'){ const pr = PRESETS.ledger[v]; S.settings.low = clamp(S.settings.low, pr[0], pr[1] - 3); S.settings.high = clamp(S.settings.high, S.settings.low + 3, pr[1]); }
+      if (k === 'key') S.scaleKey = v;
+      save();
+      if (S.screen === 'practice') newPractice(); else render();
+      break;
+    }
+    case 'range': {
+      const k = t.dataset.k, d = parseInt(t.dataset.v, 10), s = S.settings;
+      if (k === 'low') s.low = clamp(s.low + d, 14, s.high - 3); else s.high = clamp(s.high + d, s.low + 3, 42);
+      save(); render(); break;
+    }
+    case 'preset': { const p = PRESETS[arg][S.settings.staff]; S.settings.low = p[0]; S.settings.high = p[1]; save(); render(); break; }
+    case 'sound': S.settings.sound = !S.settings.sound; save(); render(); break;
+    case 'pn': P.n = parseInt(arg, 10); P.streak = 0; newPractice(); break;
+    case 'hint': P.hint = true; render(); break;
+    case 'pnext': newPractice(); break;
+    case 'replay': audio(); playSteps(P.q.steps); break;
+    case 'answer': {
+      const i = parseInt(arg, 10);
+      if (S.screen === 'practice') answerPractice(i); else if (S.screen === 'play') answerTimed(i); else if (S.screen === 'lesson') lessonAnswer(i);
+      break;
+    }
+    case 'lesson': startLesson(parseInt(arg, 10)); break;
+    case 'lnote': lessonTap(parseInt(arg, 10)); break;
+    case 'lprev': LS_.page = Math.max(0, LS_.page - 1); LS_.sel = null; render(); break;
+    case 'lnext': {
+      const L = LESSONS[LS_.i];
+      if (LS_.page < L.pages.length - 1){ LS_.page++; LS_.sel = null; }
+      else { LS_.phase = 'quiz'; LS_.q = lessonQ(); }
+      render(); window.scrollTo(0, 0); break;
+    }
+    case 'lqnext': lessonNextQ(); break;
+    case 'bothon': S.settings.staff = 'grand'; S.settings.low = Math.min(S.settings.low, 18); save(); go('home'); break;
+    case 'sel': S.sel = parseInt(arg, 10); render(); break;
+    case 'start': startLevel(parseInt(arg, 10)); break;
+    case 'skey': S.scaleKey = arg; S.scaleSel = null; clearInterval(scaleTimer); render(); break;
+    case 'snote': audio(); scaleTap(parseInt(arg, 10)); break;
+    case 'splay': playScale(); break;
+    case 'squiz': {
+      S.settings.key = S.scaleKey || S.settings.key; save();
+      P.n = 1; P.streak = 0; P.q = null; go('practice'); newPractice(); break;
+    }
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'pname'){ S.settings.name = e.target.value.slice(0, 16); save(); }
+});
+
+render();
+connect();
+})();
+</script>
+</body>
+</html>
