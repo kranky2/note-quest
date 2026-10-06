@@ -201,7 +201,9 @@ body.keys .app{max-width:none;height:100%;padding-block:8px 10px;gap:8px}
 .kv-staff{flex:1.3;min-width:0;background:var(--card);border-radius:22px;padding:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 var(--lav-line)}
 .kv-staff .staff{height:100%;width:100%;max-width:none;display:flex;justify-content:center;align-items:center}
 .kv-staff svg{width:auto!important;height:100%!important;max-width:100%;max-height:100%}
-.kv-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.kv-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;justify-content:flex-start;overflow-y:auto;min-height:0}
+.kv-top{overflow:hidden}
+.kv-row .btn.rose{flex:.8}
 .kv-msg{background:var(--card);border-radius:18px;padding:10px 12px;font-size:15px;line-height:1.35}
 .kv-msg b{display:block;font-size:16px}
 .kv-msg.ok{background:var(--right-tint);color:var(--right-deep)}
@@ -224,6 +226,15 @@ body.keys .app{max-width:none;height:100%;padding-block:8px 10px;gap:8px}
 .wk.hint,.bk.hint{background:var(--gold)!important;color:var(--ink)}
 .wk.pressed,.bk.pressed{filter:brightness(.9)}
 .rotate-tip{display:none;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:8px 12px;font-size:14px;font-weight:700}
+@media (orientation:landscape) and (max-height:540px){
+  .kv-msg{padding:8px 12px;font-size:14px}
+  .kv-msg b{font-size:15px}
+  .kv-msg .more{display:none}
+  .kv-row .btn{min-height:40px}
+  .kv-head .icon-btn{width:40px;height:40px}
+  .kv-head h1{font-size:18px}
+  .piano{height:clamp(96px,34vh,150px)}
+}
 @media (orientation:portrait){
   .rotate-tip{display:flex}
   .kv-top{flex-direction:column}
@@ -1017,11 +1028,12 @@ function keysView(){
     let msg;
     if (K.done) msg = `<div class="kv-msg ok"><b>${KPRAISE[(K.round + K.idx) % KPRAISE.length]}</b>${spoken(q.steps.map(liOf))}</div>`;
     else if (K.msg) msg = `<div class="kv-msg no">${K.msg}</div>`;
-    else msg = `<div class="kv-msg"><b>${total === 1 ? 'Play this note' : `Play note ${K.idx + 1} of ${total}`}</b>${total === 1 ? 'Find it on the piano.' : 'Left to right. The pink note is next.'}${S.settings.exact ? '' : ' Any Do, Re or Mi with the same name counts.'}</div>`;
+    else msg = `<div class="kv-msg"><b>${total === 1 ? 'Play this note' : `Play note ${K.idx + 1} of ${total}`}</b><span class="more">${total === 1 ? 'Find it on the piano.' : 'Left to right. The pink note is next.'}${S.settings.exact ? '' : ' Any key with the same name counts.'}</span></div>`;
+    const raceB = `<button class="btn rose" data-act="kmode" data-arg="race" aria-label="Race 10 cards${best ? ', best ' + best.toFixed(1) + ' seconds' : ''}">Race${best ? ` · ${best.toFixed(1)}s` : ''}</button>`;
     const btns = race ? '' : K.done
-      ? `<div class="kv-row"><button class="btn" data-act="khear">Hear it</button><button class="btn violet" data-act="knext">Next card</button></div>`
-      : `<div class="kv-row"><button class="btn" data-act="khint">Show the key</button><button class="btn" data-act="knext">Skip</button></div>`;
-    const raceBtn = race ? '' : `<button class="btn rose" data-act="kmode" data-arg="race" style="flex:none;min-height:46px">Race 10 cards${best ? ` · best ${best.toFixed(1)}s` : ''}</button>`;
+      ? `<div class="kv-row"><button class="btn" data-act="khear">Hear it</button><button class="btn violet" data-act="knext">Next</button>${raceB}</div>`
+      : `<div class="kv-row"><button class="btn" data-act="khint">Show key</button><button class="btn" data-act="knext">Skip</button>${raceB}</div>`;
+    const raceBtn = '';
     const toggles = race ? '' : `<div class="kv-tog"><button class="chip ${S.settings.keyNames ? 'on' : ''}" data-act="ktog" data-arg="keyNames" aria-pressed="${S.settings.keyNames}">Names on keys</button><button class="chip ${S.settings.exact ? 'on' : ''}" data-act="ktog" data-arg="exact" aria-pressed="${S.settings.exact}">Exact octave</button></div>`;
     side = status + msg + btns + raceBtn;
   }
