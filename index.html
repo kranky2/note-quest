@@ -1000,7 +1000,7 @@ function keysView(){
   const N = whites.length, nameArr = S.settings.names === 'letter' ? LET : SOL;
   let piano = `<div class="piano-wrap" id="pwrap"><div class="piano" id="piano" style="--nw:${N}" role="group" aria-label="Piano keyboard">`;
   whites.forEach(st => { const li = liOf(st), m = 12 * (octOf(st) + 1) + SEMI[li];
-    piano += `<button class="wk" data-act="pkey" data-arg="${m}" aria-label="${SOL[li]}, ${LET[li]}${octOf(st)}">${m === 60 ? '<i class="mc" aria-hidden="true"></i>' : ''}<span>${S.settings.keyNames ? nameArr[li] : ''}</span></button>`; });
+    piano += `<button class="wk" data-act="pkey" data-arg="${m}" aria-label="${SOL[li]}, ${LET[li]}${octOf(st)}">${m === 60 ? '<i class="mc" aria-hidden="true"></i>' : ''}</button>`; });
   whites.forEach((st, i) => { const li = liOf(st);
     if ([0,1,3,4,5].includes(li) && i < N - 1){ const m = 12 * (octOf(st) + 1) + SEMI[li] + 1;
       piano += `<button class="bk" data-act="pkey" data-arg="${m}" style="left:calc(${(i + 1) * 100 / N}% - ${0.3 * 100 / N}%);width:${0.6 * 100 / N}%" aria-label="${keyName(m)}"></button>`; } });
@@ -1026,7 +1026,7 @@ function keysView(){
     side = status + msg + btns + raceBtn;
   }
   return `
-  <div class="kv-head"><button class="icon-btn" data-act="go" data-arg="home" aria-label="Back">${I.back}</button><h1>Piano Palace${race ? ' · Race' : ''}</h1><div class="chips">${chips}${race ? '' : `<button class="chip ${S.settings.keyNames ? 'on' : ''}" data-act="ktog" data-arg="keyNames" aria-pressed="${S.settings.keyNames}">Names</button><button class="chip ${S.settings.exact ? 'on' : ''}" data-act="ktog" data-arg="exact" aria-pressed="${S.settings.exact}">Exact octave</button>`}</div></div>
+  <div class="kv-head"><button class="icon-btn" data-act="go" data-arg="home" aria-label="Back">${I.back}</button><h1>Piano Palace${race ? ' · Race' : ''}</h1><div class="chips">${chips}${race ? '' : `<button class="chip ${S.settings.exact ? 'on' : ''}" data-act="ktog" data-arg="exact" aria-pressed="${S.settings.exact}">Exact octave</button>`}</div></div>
   <div class="rotate-tip">${I.rotate}<span>Turn your phone sideways for a bigger piano.</span></div>
   <div class="kv-top"><div class="kv-staff"><div class="staff" id="staff"></div></div><div class="kv-side">${side}</div></div>
   ${piano}`;
