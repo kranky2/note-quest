@@ -6,6 +6,7 @@ A princess-themed sight-reading game for young piano players, made for phones.
 - **Royal Challenge** – 9 timed levels in three towers: one note, two notes, four notes. Win 2 stars to unlock the next level.
 - **Scale Castle** – see and hear C, F, G and D major with their key signatures
 - **Note School** – five short lessons each for the treble and bass clef, each ending in a quiz
+- **Piano Palace** – read the note(s) on the staff and play them on an on-screen piano (best with the phone sideways). Practice mode with hints, or race 10 cards for a best time. Options: names on keys, exact octave.
 - **Settings** – Do Re Mi (fixed Do = C), letter names or both; treble, bass or both hands; note range; key
 
 Progress is saved in the phone's browser.

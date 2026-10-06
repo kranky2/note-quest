@@ -195,6 +195,43 @@ button{font:inherit;color:inherit}
 .text-in:focus{outline:none;border-color:var(--violet)}
 .vf-err{color:var(--wrong-deep);font-weight:700;text-align:center;padding:24px 8px;margin:0}
 
+/* piano palace */
+body.keys .app{max-width:none;height:100%;padding-block:8px 10px;gap:8px}
+.kv-top{display:flex;gap:10px;flex:1;min-height:0}
+.kv-staff{flex:1.3;min-width:0;background:var(--card);border-radius:22px;padding:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 var(--lav-line)}
+.kv-staff .staff{height:100%;width:100%;max-width:none;display:flex;justify-content:center;align-items:center}
+.kv-staff svg{width:auto!important;height:100%!important;max-width:100%;max-height:100%}
+.kv-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.kv-msg{background:var(--card);border-radius:18px;padding:10px 12px;font-size:15px;line-height:1.35}
+.kv-msg b{display:block;font-size:16px}
+.kv-msg.ok{background:var(--right-tint);color:var(--right-deep)}
+.kv-msg.no{background:var(--wrong-tint);color:var(--wrong-deep)}
+.kv-row{display:flex;gap:8px}
+.kv-row .btn{min-height:46px;font-size:15px}
+.kv-tog{display:flex;gap:6px;flex-wrap:wrap}
+.kv-tog .chip{min-height:36px;padding:6px 12px;font-size:13px}
+.kv-head{display:flex;align-items:center;gap:10px}
+.kv-head h1{margin:0;font-family:var(--display);font-weight:600;font-size:20px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kv-head .chips{flex-wrap:nowrap;gap:6px}
+.kv-head .chip{min-height:38px;padding:6px 12px;font-size:13px}
+.piano-wrap{overflow-x:auto;flex:none;border-radius:14px;background:var(--ink);padding:6px 4px 4px}
+.piano{position:relative;display:flex;height:clamp(110px,36vh,190px);min-width:100%}
+.wk{flex:1 1 0;min-width:0;border:0;margin:0 1px;background:#fff;border-radius:0 0 10px 10px;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:0 0 8px;font-weight:800;font-size:12px;color:var(--ink-soft);box-shadow:inset 0 -6px 0 #EFE6FB;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.wk .mc{width:9px;height:9px;border-radius:5px;background:var(--rose);margin-bottom:5px}
+.bk{position:absolute;top:0;height:60%;border:0;background:#2A0F2E;border-radius:0 0 8px 8px;cursor:pointer;z-index:2;box-shadow:inset 0 -6px 0 #4A1D4F;touch-action:manipulation;padding:0}
+.wk.hit-ok,.bk.hit-ok{background:var(--right)!important;color:#fff;box-shadow:none}
+.wk.hit-no,.bk.hit-no{background:var(--wrong)!important;color:#fff;box-shadow:none}
+.wk.hint,.bk.hint{background:var(--gold)!important;color:var(--ink)}
+.wk.pressed,.bk.pressed{filter:brightness(.9)}
+.rotate-tip{display:none;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:8px 12px;font-size:14px;font-weight:700}
+@media (orientation:portrait){
+  .rotate-tip{display:flex}
+  .kv-top{flex-direction:column}
+  .kv-staff{min-height:190px;flex:none}
+  .piano{height:190px;min-width:calc(var(--nw) * 42px)}
+  .kv-head{flex-wrap:wrap}
+  .kv-head .chips{width:100%;flex-wrap:wrap;justify-content:center}
+}
 :focus-visible{outline:3px solid var(--violet);outline-offset:3px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -232,8 +269,8 @@ const PRESETS = {
 /* ---------- state ---------- */
 const S = {
   screen:'home',
-  settings:{names:'solfege', staff:'treble', low:17, high:40, key:'F', sound:true, name:''},
-  progress:{best:[0,0,0,0,0,0,0,0,0], practiced:0, lessons:[]},
+  settings:{names:'solfege', staff:'treble', low:17, high:40, key:'F', sound:true, name:'', keyNames:true, exact:true},
+  progress:{best:[0,0,0,0,0,0,0,0,0], practiced:0, lessons:[], keysBest:{}},
   savedAt:0, sel:null, scaleKey:null, scaleSel:null
 };
 let P = {n:1, streak:0}, G = null, R = null, lastQ = '';
@@ -281,6 +318,8 @@ const I = {
   castle:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C2306E" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V10l3 2V7l3 2V4l2 2 2-2v5l3-2v5l3-2v11z"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/></svg>',
   stairs:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C2306E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 20h4v-4h4v-4h4V8h4V4"/></svg>',
   tick:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1D4E80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+  keys:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C2306E" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M7.25 4v16M12 4v16M16.75 4v16"/><path d="M5.5 4h3v9h-3zM10.25 4h3v9h-3zM15 4h3v9h-3z" fill="#C2306E"/></svg>',
+  rotate:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A3E9D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="16" rx="2" transform="rotate(-90 12 12)"/><path d="M4 7a8 8 0 0 1 6-4M10 3l-2.5-.5L8 5"/></svg>',
   book:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7A3E9D" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7M9 12h5"/></svg>',
   gear:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
   check:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
@@ -332,17 +371,20 @@ function merge(d){
     if (KEYS[s.key]) o.key = s.key;
     if (typeof s.sound === 'boolean') o.sound = s.sound;
     if (typeof s.name === 'string') o.name = s.name.slice(0, 16);
+    if (typeof s.keyNames === 'boolean') o.keyNames = s.keyNames;
+    if (typeof s.exact === 'boolean') o.exact = s.exact;
   }
   if (d.progress && typeof d.progress === 'object'){
     const b = d.progress.best;
     if (Array.isArray(b) && b.length === 9) S.progress.best = b.map(v => clamp(parseInt(v) || 0, 0, 3));
+    if (d.progress.keysBest && typeof d.progress.keysBest === 'object'){ const kb = {}; ['1','2','4'].forEach(n => { const v = d.progress.keysBest[n]; if (Number.isFinite(v) && v > 0) kb[n] = v; }); S.progress.keysBest = kb; }
     if (Number.isFinite(d.progress.practiced)) S.progress.practiced = Math.max(0, d.progress.practiced | 0);
     if (Array.isArray(d.progress.lessons)) S.progress.lessons = d.progress.lessons.filter(v => Number.isInteger(v) && v >= 0 && v < 10);
     else if (S.settings.staff !== 'treble') S.settings.staff = 'treble'; /* saved before lessons existed: start on the top staff */
   }
   if (Number.isFinite(d.savedAt)) S.savedAt = d.savedAt;
 }
-function snapshot(){ return {settings:{...S.settings}, progress:{best:S.progress.best.slice(), practiced:S.progress.practiced, lessons:S.progress.lessons.slice()}, savedAt:S.savedAt}; }
+function snapshot(){ return {settings:{...S.settings}, progress:{best:S.progress.best.slice(), practiced:S.progress.practiced, lessons:S.progress.lessons.slice(), keysBest:{...S.progress.keysBest}}, savedAt:S.savedAt}; }
 function save(){
   S.savedAt = Date.now();
   const data = snapshot();
@@ -535,6 +577,7 @@ function homeView(){
   <button class="menu" data-act="go" data-arg="practice"><span class="ico">${I.flower}</span><span class="txt"><span class="name">Practice Garden</span><span class="desc">No clock. Take your time.</span></span>${I.chev('#7A3E9D')}</button>
   <button class="menu rose" data-act="go" data-arg="levels"><span class="ico">${I.castle}</span><span class="txt"><span class="name">Royal Challenge</span><span class="desc">Beat the clock · Level ${nl + 1} of 9</span></span>${I.chev('#FFFFFF')}</button>
   <button class="menu pink" data-act="go" data-arg="scale"><span class="ico">${I.stairs}</span><span class="txt"><span class="name">Scale Castle</span><span class="desc">See and hear ${KEYS[s.key].label}</span></span>${I.chev('#C2306E')}</button>
+  <button class="menu rose" data-act="go" data-arg="keys"><span class="ico">${I.keys}</span><span class="txt"><span class="name">Piano Palace</span><span class="desc">Read the note, then play it · turn sideways</span></span>${I.chev('#FFFFFF')}</button>
   <button class="menu" data-act="go" data-arg="lessons"><span class="ico">${I.book}</span><span class="txt"><span class="name">Note School</span><span class="desc">${schoolSummary()}</span></span>${I.chev('#7A3E9D')}</button>
   <div class="bottom">
     <div class="seg" role="group" aria-label="Note names">
@@ -916,8 +959,133 @@ function lessonNextQ(){
   render();
 }
 
+/* ---------- piano palace ---------- */
+let K = null, kraf = 0, kflash = null, kScrolled = false;
+const KPRAISE = ['Lovely playing!','Royal fingers!','Sparkling!','Bravo, princess!','Perfect pitch!'];
+function midiOf(step, key){ const li = liOf(step), a = KEYS[key].acc[li] || 0; return 12 * (octOf(step) + 1) + SEMI[li] + a; }
+function freqM(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+function keyName(m){
+  const pc = ((m % 12) + 12) % 12, W = {0:0, 2:1, 4:2, 5:3, 7:4, 9:5, 11:6}, N = S.settings.names === 'letter' ? LET : SOL;
+  if (pc in W) return N[W[pc]];
+  const lo = W[pc - 1]; return `${N[lo]}♯ / ${N[(lo + 1) % 7]}♭`;
+}
+function keysRange(){
+  const ps = pools(); let lo = Math.min(...ps.map(p => p.lo)), hi = Math.max(...ps.map(p => p.hi));
+  while (liOf(lo) !== 0 && liOf(lo) !== 3) lo--;
+  while (liOf(hi) !== 6 && liOf(hi) !== 2) hi++;
+  return [lo, hi];
+}
+function newKeysCard(){
+  K.q = makeQuestion(K.n); K.idx = 0; K.done = false; K.msg = ''; K.cardWrong = 0; K.hint = false;
+}
+function startKeys(mode){
+  const n = K ? K.n : 1;
+  K = {mode, n, idx:0, wrong:0, round:0, total:10, finished:null};
+  if (mode === 'race'){ K.t0 = performance.now(); }
+  newKeysCard();
+  render(); kTick();
+}
+function kTick(){
+  cancelAnimationFrame(kraf);
+  const step = () => {
+    if (S.screen !== 'keys' || !K || K.mode !== 'race' || K.finished) return;
+    const el = $('ktime'); if (el) el.textContent = ((performance.now() - K.t0) / 1000 + 2 * K.wrong).toFixed(1) + 's';
+    kraf = requestAnimationFrame(step);
+  };
+  kraf = requestAnimationFrame(step);
+}
+function keysView(){
+  const q = K.q, race = K.mode === 'race', [lo, hi] = keysRange(), whites = [];
+  for (let st = lo; st <= hi; st++) whites.push(st);
+  const N = whites.length, nameArr = S.settings.names === 'letter' ? LET : SOL;
+  let piano = `<div class="piano-wrap" id="pwrap"><div class="piano" id="piano" style="--nw:${N}" role="group" aria-label="Piano keyboard">`;
+  whites.forEach(st => { const li = liOf(st), m = 12 * (octOf(st) + 1) + SEMI[li];
+    piano += `<button class="wk" data-act="pkey" data-arg="${m}" aria-label="${SOL[li]}, ${LET[li]}${octOf(st)}">${m === 60 ? '<i class="mc" aria-hidden="true"></i>' : ''}<span>${S.settings.keyNames ? nameArr[li] : ''}</span></button>`; });
+  whites.forEach((st, i) => { const li = liOf(st);
+    if ([0,1,3,4,5].includes(li) && i < N - 1){ const m = 12 * (octOf(st) + 1) + SEMI[li] + 1;
+      piano += `<button class="bk" data-act="pkey" data-arg="${m}" style="left:calc(${(i + 1) * 100 / N}% - ${0.3 * 100 / N}%);width:${0.6 * 100 / N}%" aria-label="${keyName(m)}"></button>`; } });
+  piano += '</div></div>';
+  const chips = [1,2,4].map(n => `<button class="chip ${K.n === n ? 'on' : ''}" data-act="kn" data-arg="${n}" ${race && !K.finished ? 'disabled' : ''}>${n === 1 ? '1 note' : n + ' notes'}</button>`).join('');
+  let side;
+  if (race && K.finished){
+    const f = K.finished;
+    side = `<div class="kv-msg ok"><b>${f.newBest ? 'New best time!' : 'Race finished!'}</b>${f.time.toFixed(1)} seconds for 10 cards${f.wrong ? ` (${f.wrong} wrong ${f.wrong === 1 ? 'key' : 'keys'}, +${2 * f.wrong}s)` : ', no wrong keys!'}.${f.best && !f.newBest ? ` Best is ${f.best.toFixed(1)}s.` : ''}</div>
+      <div class="kv-row"><button class="btn" data-act="kmode" data-arg="practice">Practice</button><button class="btn rose" data-act="kmode" data-arg="race">Race again</button></div>`;
+  } else {
+    const total = q.steps.length, best = S.progress.keysBest[K.n];
+    const status = race ? `<div class="kv-row" style="justify-content:space-between;font-weight:800"><span>Card ${K.round + 1} of ${K.total}</span><span class="pill" id="ktime">0.0s</span></div>` : '';
+    let msg;
+    if (K.done) msg = `<div class="kv-msg ok"><b>${KPRAISE[(K.round + K.idx) % KPRAISE.length]}</b>${spoken(q.steps.map(liOf))}</div>`;
+    else if (K.msg) msg = `<div class="kv-msg no">${K.msg}</div>`;
+    else msg = `<div class="kv-msg"><b>${total === 1 ? 'Play this note' : `Play note ${K.idx + 1} of ${total}`}</b>${total === 1 ? 'Find it on the piano.' : 'Left to right. The pink note is next.'}${S.settings.exact ? '' : ' Any Do, Re or Mi with the same name counts.'}</div>`;
+    const btns = race ? '' : K.done
+      ? `<div class="kv-row"><button class="btn" data-act="khear">Hear it</button><button class="btn violet" data-act="knext">Next card</button></div>`
+      : `<div class="kv-row"><button class="btn" data-act="khint">Show the key</button><button class="btn" data-act="knext">Skip</button></div>`;
+    const raceBtn = race ? '' : `<button class="btn rose" data-act="kmode" data-arg="race" style="flex:none;min-height:46px">Race 10 cards${best ? ` · best ${best.toFixed(1)}s` : ''}</button>`;
+    const toggles = race ? '' : `<div class="kv-tog"><button class="chip ${S.settings.keyNames ? 'on' : ''}" data-act="ktog" data-arg="keyNames" aria-pressed="${S.settings.keyNames}">Names on keys</button><button class="chip ${S.settings.exact ? 'on' : ''}" data-act="ktog" data-arg="exact" aria-pressed="${S.settings.exact}">Exact octave</button></div>`;
+    side = status + msg + btns + raceBtn;
+  }
+  return `
+  <div class="kv-head"><button class="icon-btn" data-act="go" data-arg="home" aria-label="Back">${I.back}</button><h1>Piano Palace${race ? ' · Race' : ''}</h1><div class="chips">${chips}${race ? '' : `<button class="chip ${S.settings.keyNames ? 'on' : ''}" data-act="ktog" data-arg="keyNames" aria-pressed="${S.settings.keyNames}">Names</button><button class="chip ${S.settings.exact ? 'on' : ''}" data-act="ktog" data-arg="exact" aria-pressed="${S.settings.exact}">Exact octave</button>`}</div></div>
+  <div class="rotate-tip">${I.rotate}<span>Turn your phone sideways for a bigger piano.</span></div>
+  <div class="kv-top"><div class="kv-staff"><div class="staff" id="staff"></div></div><div class="kv-side">${side}</div></div>
+  ${piano}`;
+}
+function keysAfter(){
+  const q = K.q, colors = {};
+  q.steps.forEach((_, i) => { if (i < K.idx) colors[i] = RIGHT; else if (i === K.idx && q.steps.length > 1 && !K.done) colors[i] = ROSE; });
+  drawStaff($('staff'), {mode:staffMode(), key:S.settings.key, notes:q.steps.map(st => ({step:st, staff:q.staff})), colors});
+  if (K.hint && !K.done){ const b = document.querySelector(`[data-act=pkey][data-arg="${midiOf(q.steps[K.idx], S.settings.key)}"]`); if (b) b.classList.add('hint'); }
+  if (kflash && performance.now() - kflash.at < 450){
+    const b = document.querySelector(`[data-act=pkey][data-arg="${kflash.m}"]`);
+    if (b){ b.classList.add(kflash.cls); const left = 450 - (performance.now() - kflash.at); setTimeout(() => b.classList.remove('hit-ok', 'hit-no', 'pressed'), left); }
+  }
+  const wrap = $('pwrap');
+  if (wrap && !kScrolled && wrap.scrollWidth > wrap.clientWidth){
+    const mc = document.querySelector('[data-act=pkey][data-arg="60"]');
+    if (mc) wrap.scrollLeft = mc.offsetLeft - wrap.clientWidth / 2 + mc.offsetWidth / 2;
+    kScrolled = true;
+  }
+}
+function pkey(m){
+  audio();
+  if (S.settings.sound) tone(freqM(m), 0, 1.1, 0.24);
+  if (!K || !K.q || K.done || (K.mode === 'race' && K.finished)){ kflash = {m, cls:'pressed', at:performance.now()}; flashNow(); return; }
+  const target = midiOf(K.q.steps[K.idx], S.settings.key);
+  const ok = S.settings.exact ? m === target : ((m - target) % 12 + 12) % 12 === 0;
+  if (ok){
+    kflash = {m, cls:'hit-ok', at:performance.now()};
+    K.idx++; K.msg = ''; K.hint = false;
+    if (K.idx >= K.q.steps.length){
+      K.done = true;
+      if (K.mode === 'race'){
+        K.round++;
+        if (K.round >= K.total){
+          const time = (performance.now() - K.t0) / 1000 + 2 * K.wrong, old = S.progress.keysBest[K.n];
+          const newBest = !old || time < old; if (newBest){ S.progress.keysBest[K.n] = Math.round(time * 10) / 10; save(); }
+          K.finished = {time, wrong:K.wrong, newBest, best: old};
+          if (S.settings.sound){ const base = SCALE_START[S.settings.key]; [0,2,4,7].forEach((d, j) => tone(freq(base + d, S.settings.key), 0.3 + j * 0.12, 0.9, 0.18)); }
+        } else setTimeout(() => { if (S.screen === 'keys' && K && K.mode === 'race' && !K.finished){ newKeysCard(); render(); } }, 450);
+      }
+    }
+  } else {
+    kflash = {m, cls:'hit-no', at:performance.now()};
+    K.wrong++; K.cardWrong++;
+    const target2 = target, same = ((m - target2) % 12 + 12) % 12 === 0;
+    K.msg = same ? `<b>Right name, wrong place!</b>Try the ${m > target2 ? 'lower' : 'higher'} ${keyName(target2)}. Middle C has a pink dot.`
+                 : `<b>That key is ${keyName(m)}.</b>Look at ${K.q.steps.length > 1 ? 'the pink note' : 'the note'} again.`;
+    if (K.mode === 'practice' && K.cardWrong >= 2) K.hint = true;
+  }
+  render();
+}
+function flashNow(){
+  const b = document.querySelector(`[data-act=pkey][data-arg="${kflash.m}"]`);
+  if (b){ b.classList.add(kflash.cls); setTimeout(() => b.classList.remove('pressed'), 180); }
+}
+
 /* ---------- render ---------- */
 const VIEWS = {
+  keys:[keysView, keysAfter, true],
   lessons:[lessonsView, null, true], lesson:[lessonView, lessonAfter, true],
   home:[homeView, homeAfter, false], practice:[practiceView, practiceAfter, true], levels:[levelsView, null, false],
   play:[playView, playAfter, false], results:[resultsView, null, false], scale:[scaleView, scaleAfter, true], settings:[settingsView, null, false]
@@ -925,12 +1093,14 @@ const VIEWS = {
 function render(){
   const [view, after, lilac] = VIEWS[S.screen];
   document.body.classList.toggle('lilac', lilac);
+  document.body.classList.toggle('keys', S.screen === 'keys');
   $('app').innerHTML = view();
   if (after) after();
 }
 function go(screen){
   if (G && G.raf) cancelAnimationFrame(G.raf);
-  clearTimeout(G && G.next); clearInterval(scaleTimer);
+  clearTimeout(G && G.next); clearInterval(scaleTimer); cancelAnimationFrame(kraf);
+  if (screen === 'keys'){ kScrolled = false; if (!K || K.mode === 'race') { K = {mode:'practice', n: K ? K.n : 1}; newKeysCard(); } }
   if (screen === 'practice' && !P.q) P.q = makeQuestion(P.n);
   if (screen === 'scale'){ S.scaleSel = null; if (!S.scaleKey) S.scaleKey = S.settings.key; }
   S.screen = screen;
@@ -1076,11 +1246,22 @@ document.addEventListener('click', e => {
     case 'skey': S.scaleKey = arg; S.scaleSel = null; clearInterval(scaleTimer); render(); break;
     case 'snote': audio(); scaleTap(parseInt(arg, 10)); break;
     case 'splay': playScale(); break;
+    case 'pkey': break;
+    case 'kn': K.n = parseInt(arg, 10); newKeysCard(); render(); break;
+    case 'knext': newKeysCard(); render(); break;
+    case 'khint': K.hint = true; render(); break;
+    case 'khear': audio(); playSteps(K.q.steps); break;
+    case 'kmode': startKeys(arg); break;
+    case 'ktog': S.settings[arg] = !S.settings[arg]; save(); render(); break;
     case 'squiz': {
       S.settings.key = S.scaleKey || S.settings.key; save();
       P.n = 1; P.streak = 0; P.q = null; go('practice'); newPractice(); break;
     }
   }
+});
+document.addEventListener('pointerdown', e => {
+  const t = e.target.closest('[data-act=pkey]'); if (!t) return;
+  e.preventDefault(); pkey(parseInt(t.dataset.arg, 10));
 });
 document.addEventListener('input', e => {
   if (e.target.id === 'pname'){ S.settings.name = e.target.value.slice(0, 16); save(); }
